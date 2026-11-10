@@ -77,17 +77,61 @@ textarea {
 textarea {
   padding: 0.625rem 0.875rem;
 }
-input:focus-visible,
+input:not([type='checkbox']):focus-visible,
 textarea:focus-visible {
   border-color: var(--color-accent);
   outline: none;
   box-shadow: 0 0 0 4px var(--color-accent-soft);
 }
-input[type='checkbox'],
 input[type='radio'] {
   width: 1.125rem;
   height: 1.125rem;
   accent-color: var(--color-primary);
+}
+/* Checkbox drawn by us: a rounded box that fills with the accent and shows a tick. */
+input[type='checkbox'] {
+  appearance: none;
+  display: inline-grid;
+  flex: none;
+  place-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  border: 1.5px solid color-mix(in srgb, var(--color-muted) 60%, var(--color-surface));
+  border-radius: 0.375rem;
+  background: var(--color-surface);
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+input[type='checkbox']::after {
+  content: '';
+  width: 0.75rem;
+  height: 0.75rem;
+  background: var(--color-accent-contrast);
+  clip-path: polygon(14% 52%, 0 66%, 40% 100%, 100% 22%, 86% 10%, 39% 72%);
+  transform: scale(0);
+  transition: transform 0.1s;
+}
+input[type='checkbox']:hover {
+  border-color: var(--color-accent);
+}
+input[type='checkbox']:checked {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+input[type='checkbox']:checked::after {
+  transform: scale(1);
+}
+input[type='checkbox']:focus-visible {
+  border-color: var(--color-accent);
+  outline: none;
+  box-shadow: 0 0 0 4px var(--color-accent-soft);
+}
+input[type='checkbox']:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 label {
   font-size: 0.875rem;

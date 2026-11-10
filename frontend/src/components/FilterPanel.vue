@@ -76,7 +76,6 @@ const bodyId = useId()
   .filters__body :deep(input:not([type='checkbox'])),
   .filters__body :deep(.select__button) {
     min-height: 2.5rem;
-    border-radius: 999px;
     font-size: 0.875rem;
   }
   .filters__body :deep(label),
