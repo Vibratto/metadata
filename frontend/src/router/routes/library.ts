@@ -10,7 +10,7 @@ export default [
     path: '/library',
     name: 'library',
     component: LibraryView,
-    meta: { navLabel: 'library.nav', navGroup: 'main', navOrder: 20, navIcon: 'library' },
+    meta: { navLabel: 'library.nav', navGroup: 'main', navOrder: 20, navIcon: 'disc' },
     // Other views (the Log) link to an item with `?tab=…&id=…&panel=history`.
     beforeEnter: (to) => {
       const { tab, id, panel } = to.query

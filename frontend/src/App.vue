@@ -3,7 +3,6 @@ import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
-import AppIcon from './components/AppIcon.vue'
 import AppNav from './components/AppNav.vue'
 import BaseAlert from './components/BaseAlert.vue'
 import BaseButton from './components/BaseButton.vue'
@@ -34,7 +33,6 @@ onMounted(() => {
     <div class="app-shell">
       <header class="topbar">
         <span class="topbar__brand">
-          <span class="topbar__logo"><AppIcon name="logo" /></span>
           <span class="sr-only">{{ t('app.title') }}</span>
         </span>
         <GlobalSearch />
@@ -70,18 +68,6 @@ onMounted(() => {
   padding: 0.75rem var(--space-3);
   background: color-mix(in srgb, var(--color-bg) 88%, transparent);
   backdrop-filter: blur(12px);
-}
-.topbar__logo {
-  display: grid;
-  place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 0.625rem;
-  background: var(--color-logo-bg);
-  color: var(--color-accent-strong);
-}
-.topbar__logo .icon {
-  stroke-width: 2.4;
 }
 .topbar :deep(.jobs-indicator) {
   margin-left: auto;

@@ -67,7 +67,7 @@ async function refreshJobs(): Promise<void> {
   }
 }
 
-const NEXT_ICON = { wait: 'import', empty: 'library', download: 'download', watch: 'bell' } as const
+const NEXT_ICON = { wait: 'import', empty: 'disc', download: 'download', watch: 'bell' } as const
 
 function kindLabel(kind: string): string {
   return te(`dashboard.jobs.kind.${kind}`) ? t(`dashboard.jobs.kind.${kind}`) : kind
@@ -185,7 +185,7 @@ onUnmounted(() => clearInterval(timer))
         <p v-if="recent.length === 0" class="card__empty">{{ t('dashboard.recent.empty') }}</p>
         <ul v-else>
           <li v-for="entry in recent" :key="entry.id">
-            <span class="recent__icon" aria-hidden="true"><AppIcon name="log" /></span>
+            <span class="recent__icon" aria-hidden="true"><AppIcon name="history" /></span>
             <span class="recent__text">
               <span class="mono">{{ entry.action }}</span>
               <small>

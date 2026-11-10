@@ -13,7 +13,7 @@ export default [
       navGroup: 'more',
       navOrder: 50,
       navSection: 'admin',
-      navIcon: 'tools',
+      navIcon: 'wrench',
     },
   },
 ] satisfies RouteRecordRaw[]

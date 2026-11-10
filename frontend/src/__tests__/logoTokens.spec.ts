@@ -10,9 +10,13 @@ describe('brand tokens', () => {
     expect(new Set(definitions).size).toBe(1)
   })
 
-  it('the navigation and sign-in logos use the brand token', () => {
-    for (const f of ['src/components/AppNav.vue', 'src/components/AuthLayout.vue', 'src/App.vue']) {
-      expect(readFileSync(f, 'utf8')).toContain('var(--color-logo-bg)')
+  it('the sign-in logo uses the brand token', () => {
+    expect(readFileSync('src/components/AuthLayout.vue', 'utf8')).toContain('var(--color-logo-bg)')
+  })
+
+  it('the navigation shows the name without a logo', () => {
+    for (const f of ['src/components/AppNav.vue', 'src/App.vue']) {
+      expect(readFileSync(f, 'utf8')).not.toContain('name="logo"')
     }
   })
 })

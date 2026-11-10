@@ -25,7 +25,7 @@ async function withRouter(component: object, path = '/dashboard') {
 
 describe('AppIcon', () => {
   it('is decorative: the text next to it already says what it is', () => {
-    const svg = render(AppIcon, { props: { name: 'library' } }).get('svg')
+    const svg = render(AppIcon, { props: { name: 'disc' } }).get('svg')
     expect(svg.attributes('aria-hidden')).toBe('true')
     expect(svg.find('path').exists()).toBe(true)
   })

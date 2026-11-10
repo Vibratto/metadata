@@ -8,6 +8,6 @@ export default [
     path: '/log',
     name: 'log',
     component: LogView,
-    meta: { navLabel: 'log.nav', navGroup: 'more', navOrder: 80, navIcon: 'log' },
+    meta: { navLabel: 'log.nav', navGroup: 'more', navOrder: 80, navIcon: 'history' },
   },
 ] satisfies RouteRecordRaw[]

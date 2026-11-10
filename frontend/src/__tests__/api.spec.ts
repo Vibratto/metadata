@@ -144,7 +144,7 @@ describe('api()', () => {
 describe('stores', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
-  it('session: fetchMe, login y logout', async () => {
+  it('session: fetchMe, login and logout', async () => {
     const s = useSessionStore()
     expect(s.loaded).toBe(false)
     await s.fetchMe()
