@@ -1,0 +1,162 @@
+{
+  "library": {
+    "nav": "Library",
+    "title": "Library",
+    "tabs": "Item type",
+    "kind": {
+      "artists": "Artists",
+      "albums": "Albums",
+      "tracks": "Tracks",
+      "related": "Related"
+    },
+    "loading": "Loading…",
+    "pages": "Pages",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page} · {count} in total",
+    "yes": "Yes",
+    "no": "No",
+    "back": "Back to the library",
+    "fields": {
+      "name": "Name",
+      "title": "Title",
+      "artists": "Artists",
+      "album": "Album",
+      "duration": "Duration",
+      "downloaded": "Downloaded",
+      "preview": "Preview",
+      "track_number": "Track number",
+      "disc_number": "Disc number",
+      "image_url": "Image URL",
+      "cover_url": "Cover URL",
+      "year": "Year",
+      "audience": "Audience",
+      "external_id": "YouTube Music ID",
+      "description": "Description"
+    },
+    "filters": {
+      "search": "Search",
+      "ordering": "Sort by",
+      "any": "All",
+      "apply": "Apply"
+    },
+    "ordering": {
+      "default": "Default order",
+      "name": "Name (A-Z)",
+      "name_desc": "Name (Z-A)",
+      "title": "Title (A-Z)",
+      "title_desc": "Title (Z-A)",
+      "track_number": "Track number",
+      "track_count_desc": "Most tracks first",
+      "pending_count_desc": "Most pending first",
+      "album__title": "Album (A-Z)",
+      "duration": "Duration (shortest first)",
+      "duration_desc": "Duration (longest first)",
+      "year": "Year (oldest first)",
+      "year_desc": "Year (newest first)",
+      "album__year_desc": "Album (newest first)",
+      "monthly_listeners_desc": "Most listeners first"
+    },
+    "links": {
+      "title": "Related",
+      "album": "View the album",
+      "albums": "View their albums",
+      "tracks": "View their tracks",
+      "upload": "Upload audio"
+    },
+    "edit": {
+      "title": "Edit",
+      "save": "Save changes",
+      "done": "Changes saved."
+    },
+    "artists": {
+      "title": "Artists",
+      "up": "Move {name} up",
+      "down": "Move {name} down",
+      "remove": "Remove {name}",
+      "search": "Search a catalogue artist",
+      "find": "Search",
+      "add": "Add",
+      "save": "Save artists",
+      "done": "Artists updated."
+    },
+    "history": {
+      "title": "History",
+      "type": {
+        "created": "Created",
+        "changed": "Changed",
+        "deleted": "Deleted"
+      },
+      "system": "System",
+      "revert": "Go back to this version",
+      "done": "Reverted to the chosen version."
+    },
+    "block": {
+      "action": "Block",
+      "title": "Block",
+      "done": "Blocked: it won't be imported or downloaded again.",
+      "confirm": {
+        "albums": "Block the album “{name}”? It won't be imported or downloaded again.",
+        "tracks": "Block the track “{name}”? It won't be imported or downloaded again."
+      }
+    },
+    "delete": {
+      "action": "Delete",
+      "title": "Delete",
+      "also_block": "Also block it, so it is not imported or downloaded again",
+      "confirm": {
+        "albums": "Delete the album “{name}”? Its tracks and downloaded audio files are deleted too.",
+        "tracks": "Delete the track “{name}”? Its downloaded audio file is deleted too."
+      }
+    },
+    "kindOne": {
+      "artists": "Artist",
+      "albums": "Album",
+      "tracks": "Track",
+      "related": "Artist"
+    },
+    "danger": {
+      "title": "Danger zone",
+      "text": "Blocking stops it from being imported again. Deleting cannot be undone."
+    },
+    "filterLabels": {
+      "artist": "Artist",
+      "album": "Album",
+      "has_pending": "With pending",
+      "has_downloads": "With downloads",
+      "watched": "Watched",
+      "record_type": "Type",
+      "download_status": "Download",
+      "year_from": "Year from",
+      "year_to": "Year to",
+      "downloaded": "Downloaded",
+      "explicit": "Explicit",
+      "duration_min": "Minimum duration (s)",
+      "duration_max": "Maximum duration (s)"
+    },
+    "options": {
+      "yes": "Yes",
+      "no": "No",
+      "album": "Album",
+      "single": "Single",
+      "ep": "EP",
+      "complete": "Complete",
+      "partial": "Partial",
+      "none": "Not downloaded"
+    },
+    "counts": "{tracks} tracks · {pending} pending",
+    "appearances": {
+      "title": "Also appears on",
+      "none": "This recording is only on this album.",
+      "split": "Split from the others",
+      "merge_id": "Id of the recording to absorb",
+      "merge_hint": "Its albums move to this recording.",
+      "merge": "Merge"
+    },
+    "also_on": "On another album | On {n} other albums",
+    "related": {
+      "intro": "Artists related to the ones you imported. Only their profile is saved; import the discography of the ones you want.",
+      "import": "Import discography"
+    }
+  }
+}

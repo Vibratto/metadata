@@ -1,0 +1,27 @@
+{
+  "account": {
+    "nav": "Cuenta",
+    "title": "Mi cuenta",
+    "signedInAs": "Has iniciado sesión como {username}.",
+    "language": {
+      "label": "Idioma",
+      "es": "Español",
+      "en": "English",
+      "saved": "Idioma guardado."
+    },
+    "username": {
+      "title": "Cambiar el nombre de usuario",
+      "new": "Nuevo nombre de usuario",
+      "submit": "Cambiar usuario",
+      "done": "Nombre de usuario cambiado."
+    },
+    "password": {
+      "title": "Cambiar la contraseña",
+      "current": "Contraseña actual",
+      "new": "Nueva contraseña",
+      "submit": "Cambiar contraseña",
+      "done": "Contraseña cambiada."
+    },
+    "logout": "Cerrar sesión"
+  }
+}

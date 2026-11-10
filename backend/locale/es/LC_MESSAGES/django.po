@@ -1,0 +1,454 @@
+# Spanish translation of the Vibratto Metadata backend.
+msgid ""
+msgstr ""
+"Project-Id-Version: vibratto-metadata\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#, python-format
+msgid "%(created)d items added, %(skipped)d already existed."
+msgstr "%(created)d elementos añadidos, %(skipped)d ya existían."
+
+#, python-format
+msgid "%(title)s: no lyrics: %(error)s"
+msgstr "%(title)s: sin letra: %(error)s"
+
+msgid "A job of this kind is already running."
+msgstr "Ya hay una tarea de este tipo en curso."
+
+msgid "A recording cannot be merged with itself."
+msgstr "Una grabación no se puede unir consigo misma."
+
+msgid "A separator is listed twice."
+msgstr "Hay un separador repetido."
+
+msgid "Album"
+msgstr "Álbum"
+
+#, python-format
+msgid "Album “%(title)s” is blocked: skipped."
+msgstr "El álbum «%(title)s» está bloqueado: se omite."
+
+#, python-format
+msgid "Album “%(title)s”: %(count)d tracks."
+msgstr "Álbum «%(title)s»: %(count)d canciones."
+
+#, python-format
+msgid "Album “%(title)s”: %(error)s"
+msgstr "Álbum «%(title)s»: %(error)s"
+
+msgid "An artist is listed twice."
+msgstr "Hay un artista repetido."
+
+msgid "Another track of the album already has that position."
+msgstr "Otra canción del álbum ya ocupa esa posición."
+
+msgid "Artist"
+msgstr "Artista"
+
+#, python-format
+msgid "Artist %(id)s is blocked: skipped."
+msgstr "El artista %(id)s está bloqueado: se omite."
+
+#, python-format
+msgid "Artist %(id)s: %(error)s"
+msgstr "Artista %(id)s: %(error)s"
+
+#, python-format
+msgid "Artist “%(name)s” left incomplete: %(error)s"
+msgstr "El artista «%(name)s» queda incompleto: %(error)s"
+
+#, python-format
+msgid "Artist “%(name)s”."
+msgstr "Artista «%(name)s»."
+
+msgid "Between 1 and 20 separators are needed."
+msgstr "Hacen falta entre 1 y 20 separadores."
+
+msgid "Both recordings have a track on the same album."
+msgstr "Las dos grabaciones tienen una canción en el mismo álbum."
+
+msgid "Browse id."
+msgstr "Identificador de navegación."
+
+msgid "Channel id, browse id or video id, depending on the kind."
+msgstr "Identificador de canal, de navegación o de vídeo, según el tipo."
+
+msgid "Channel id."
+msgstr "Identificador de canal."
+
+#, python-format
+msgid "Could not complete “%(name)s”: %(error)s"
+msgstr "No se pudo completar «%(name)s»: %(error)s"
+
+#, python-format
+msgid "Could not complete “%(title)s”: %(error)s"
+msgstr "No se pudo completar «%(title)s»: %(error)s"
+
+#, python-format
+msgid "Could not move %(path)s: %(error)s"
+msgstr "No se pudo mover %(path)s: %(error)s"
+
+#, python-format
+msgid "Could not tag %(path)s: %(error)s"
+msgstr "No se pudo etiquetar %(path)s: %(error)s"
+
+#, python-format
+msgid "Destination already exists: %(source)s -> %(dest)s"
+msgstr "El destino ya existe: %(source)s -> %(dest)s"
+
+msgid "EP"
+msgstr "EP"
+
+msgid "Each separator must be a non-blank text of at most 10 characters."
+msgstr "Cada separador debe ser un texto no vacío de 10 caracteres como máximo."
+
+msgid "Every proxy is cooling down."
+msgstr "Todos los proxies están en espera."
+
+#, python-format
+msgid "Every proxy is cooling down: retrying in %(seconds)d s."
+msgstr "Todos los proxies están en espera: se reintenta en %(seconds)d s."
+
+msgid "Give either “track_ids” or “all_pending”."
+msgstr "Indica «track_ids» o «all_pending»."
+
+msgid "IP version"
+msgstr "versión de IP"
+
+msgid "IPv4"
+msgstr "IPv4"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "Integrated loudness (LUFS)."
+msgstr "Sonoridad integrada (LUFS)."
+
+#, python-format
+msgid "Lyrics of “%(title)s”: %(error)s"
+msgstr "Letra de «%(title)s»: %(error)s"
+
+#, python-format
+msgid "Missing file: %(path)s"
+msgstr "Falta el fichero: %(path)s"
+
+#, python-format
+msgid "No path for %(path)s: %(error)s"
+msgstr "No hay ruta para %(path)s: %(error)s"
+
+msgid "No video matches the track."
+msgstr "Ningún vídeo coincide con la canción."
+
+msgid "One of the artists does not exist."
+msgstr "Alguno de los artistas no existe."
+
+#, python-format
+msgid "Position %(wanted)d was taken, so “%(title)s” is now track %(number)d."
+msgstr "La posición %(wanted)d estaba ocupada, así que «%(title)s» pasa a ser la canción %(number)d."
+
+msgid "ReplayGain is turned off in the settings."
+msgstr "ReplayGain está desactivado en los ajustes."
+
+#, python-format
+msgid "ReplayGain of “%(title)s”: %(error)s"
+msgstr "ReplayGain de «%(title)s»: %(error)s"
+
+msgid "Seconds."
+msgstr "Segundos."
+
+msgid "Single"
+msgstr "Single"
+
+msgid "Stop requested."
+msgstr "Se ha pedido detener la tarea."
+
+msgid "Tags cannot be rewritten and files relocated in the same run."
+msgstr "No se pueden reescribir etiquetas y reubicar ficheros en la misma ejecución."
+
+msgid "That version does not exist."
+msgstr "Esa versión no existe."
+
+msgid "The account has already been created."
+msgstr "La cuenta ya está creada."
+
+msgid "The audio could not be converted."
+msgstr "No se pudo convertir el audio."
+
+#, python-format
+msgid "The backup clashes with this library: %(count)d items match different ones (for example, %(model)s #%(pk)s). Restore it on an empty installation or on the one it came from."
+msgstr "La copia choca con esta biblioteca: %(count)d elementos coinciden con otros distintos (por ejemplo, %(model)s #%(pk)s). Restáurala en una instalación vacía o en la misma de la que salió."
+
+msgid "The backup has download paths outside the library."
+msgstr "La copia tiene rutas de descarga fuera de la biblioteca."
+
+#, python-format
+msgid "The backup has invalid data: %(error)s"
+msgstr "La copia tiene datos no válidos: %(error)s"
+
+msgid "The current password is not correct."
+msgstr "La contraseña actual no es correcta."
+
+#, python-format
+msgid "The field %(field)s cannot be changed."
+msgstr "El campo %(field)s no se puede cambiar."
+
+msgid "The file is not a library backup."
+msgstr "El fichero no es una copia de la biblioteca."
+
+msgid "The file is not valid JSON."
+msgstr "El fichero no es JSON válido."
+
+msgid "The file is not valid audio, or it is larger than 200 MB."
+msgstr "El fichero no es un audio válido o supera los 200 MB."
+
+msgid "The file is too large."
+msgstr "El fichero es demasiado grande."
+
+#, python-format
+msgid "The file of download #%(id)d is missing: %(path)s"
+msgstr "Falta el fichero de la descarga n.º %(id)d: %(path)s"
+
+#, python-format
+msgid "The folder “%(folder)s” does not exist."
+msgstr "La carpeta «%(folder)s» no existe."
+
+#, python-format
+msgid "The folder “%(folder)s” is outside the library folder."
+msgstr "La carpeta «%(folder)s» está fuera de la carpeta de la biblioteca."
+
+msgid "The job has already finished."
+msgstr "La tarea ya ha terminado."
+
+msgid "The service is working."
+msgstr "El servicio funciona."
+
+msgid "The setup code is not correct."
+msgstr "El código de configuración no es correcto."
+
+msgid "The template is not valid."
+msgstr "La plantilla no es válida."
+
+msgid "The template needs {album} in its folders and {title} or {track} in the file name."
+msgstr "La plantilla necesita {album} en las carpetas y {title} o {track} en el nombre del fichero."
+
+msgid "The text is larger than 100 KB."
+msgstr "El texto supera los 100 KB."
+
+msgid "The threshold cannot be negative."
+msgstr "El umbral no puede ser negativo."
+
+#, python-format
+msgid "The value must be of type %(type)s."
+msgstr "El valor debe ser de tipo %(type)s."
+
+msgid "The video search failed."
+msgstr "No se pudo buscar el vídeo."
+
+msgid "The watch has recorded checks and cannot be deleted."
+msgstr "La vigilancia tiene comprobaciones registradas y no se puede borrar."
+
+msgid "There are more than 1000 lines."
+msgstr "Hay más de 1000 líneas."
+
+msgid "This API can only be used by the application's frontend."
+msgstr "Esta API solo la puede usar el frontend de la aplicación."
+
+msgid "This is the recording's only track: there is nothing to split."
+msgstr "Es la única canción de la grabación: no hay nada que separar."
+
+msgid "This item did not come from YouTube Music, so it cannot be blocked."
+msgstr "Este elemento no viene de YouTube Music, así que no se puede bloquear."
+
+msgid "Track"
+msgstr "Canción"
+
+#, python-format
+msgid "Track %(number)d is the same recording as on “%(album)s”."
+msgstr "La canción %(number)d es la misma grabación que en «%(album)s»."
+
+msgid "True peak; 1 is full scale."
+msgstr "Pico real; 1 es el fondo de escala."
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Unknown backup file."
+msgstr "Fichero de copia desconocido."
+
+msgid "Unknown maintenance operation."
+msgstr "Operación de mantenimiento desconocida."
+
+msgid "Unknown setting key."
+msgstr "Clave de ajuste desconocida."
+
+msgid "Unknown setting."
+msgstr "Ajuste desconocido."
+
+#, python-format
+msgid "Unknown type: %s."
+msgstr "Tipo desconocido: %s."
+
+#, python-format
+msgid "Unsupported download format: %(format)s"
+msgstr "Formato de descarga no admitido: %(format)s"
+
+#, python-format
+msgid "Unsupported format: %(value)s."
+msgstr "Formato no admitido: %(value)s."
+
+msgid "Use a proxy with an http, https, socks5 or socks5h scheme and a host."
+msgstr "Usa un proxy con esquema http, https, socks5 o socks5h y un host."
+
+msgid "Wrong username or password."
+msgstr "Usuario o contraseña incorrectos."
+
+msgid "YouTube Music is not responding."
+msgstr "YouTube Music no responde."
+
+msgid "artist_ids must be a list of YouTube Music channel ids."
+msgstr "artist_ids debe ser una lista de identificadores de canal de YouTube Music."
+
+msgid "artists"
+msgstr "artistas"
+
+msgid "automatic download"
+msgstr "descarga automática"
+
+msgid "checked"
+msgstr "comprobado"
+
+msgid "created"
+msgstr "creado"
+
+msgid "current item"
+msgstr "elemento actual"
+
+msgid "date"
+msgstr "fecha"
+
+msgid "detail"
+msgstr "detalle"
+
+msgid "done"
+msgstr "hechas"
+
+msgid "enabled"
+msgstr "activo"
+
+msgid "error"
+msgstr "error"
+
+msgid "failed"
+msgstr "fallida"
+
+msgid "failures"
+msgstr "fallos"
+
+msgid "finished"
+msgstr "fin"
+
+msgid "host"
+msgstr "host"
+
+msgid "information"
+msgstr "información"
+
+msgid "interrupted"
+msgstr "interrumpida"
+
+msgid "interval (hours)"
+msgstr "intervalo (horas)"
+
+msgid "key"
+msgstr "clave"
+
+msgid "kind"
+msgstr "tipo"
+
+msgid "last failure"
+msgstr "último fallo"
+
+msgid "last used"
+msgstr "último uso"
+
+msgid "level"
+msgstr "nivel"
+
+msgid "message"
+msgstr "mensaje"
+
+msgid "name"
+msgstr "nombre"
+
+msgid "new releases found"
+msgstr "novedades encontradas"
+
+msgid "next check"
+msgstr "próxima comprobación"
+
+msgid "parameters"
+msgstr "parámetros"
+
+msgid "pending"
+msgstr "pendiente"
+
+msgid "position"
+msgstr "posición"
+
+msgid "run"
+msgstr "ejecución"
+
+msgid "running"
+msgstr "en curso"
+
+msgid "started"
+msgstr "inicio"
+
+msgid "status"
+msgstr "estado"
+
+msgid "stopped"
+msgstr "detenida"
+
+msgid "stopping"
+msgstr "deteniéndose"
+
+msgid "succeeded"
+msgstr "correcta"
+
+msgid "successes"
+msgstr "éxitos"
+
+msgid "summary"
+msgstr "resumen"
+
+msgid "total"
+msgstr "total"
+
+msgid "updated"
+msgstr "actualizado"
+
+msgid "user"
+msgstr "usuario"
+
+msgid "value"
+msgstr "valor"
+
+msgid "warning"
+msgstr "aviso"
+
+msgid "watch"
+msgstr "vigilancia"
+
+msgid "“after” must be an integer."
+msgstr "«after» debe ser un entero."
+
+msgid "“folder” must be a path relative to the library folder."
+msgstr "«folder» debe ser una ruta relativa a la carpeta de la biblioteca."
+
+msgid "No enabled proxy supports the IP version of %(host)s."
+msgstr "Ningún proxy activo admite el tipo de IP de %(host)s."

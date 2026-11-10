@@ -1,0 +1,33 @@
+{
+  "blocked": {
+    "nav": "Bloqueados",
+    "title": "Bloqueados",
+    "intro": "Lo bloqueado no se importa ni se descarga. Desbloquéalo para volver a permitirlo.",
+    "loading": "Cargando…",
+    "empty": "No hay nada bloqueado.",
+    "columns": {
+      "kind": "Tipo",
+      "name": "Nombre",
+      "created_at": "Bloqueado el",
+      "actions": "Acciones",
+      "external_id": "Id de YouTube Music"
+    },
+    "kind": {
+      "artist": "Artista",
+      "album": "Álbum",
+      "track": "Canción"
+    },
+    "unblock": "Desbloquear",
+    "confirm": {
+      "title": "Desbloquear",
+      "text": "¿Desbloquear «{name}»? Volverá a importarse y descargarse con normalidad."
+    },
+    "done": "Desbloqueado.",
+    "pager": {
+      "label": "Páginas",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "page": "Página {page}"
+    }
+  }
+}

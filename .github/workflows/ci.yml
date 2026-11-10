@@ -1,0 +1,134 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  # release.yml runs the same checks before publishing.
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+      # msgfmt compiles the translations; the audio tests need ffmpeg.
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gettext ffmpeg
+      - run: pip install -r requirements-dev.txt
+      - run: python manage.py compilemessages -v0
+      - run: python manage.py makemigrations --check --dry-run
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.test
+      - run: pytest
+      - name: The committed API schema is up to date (run `make api`)
+        run: |
+          python manage.py spectacular --file /tmp/openapi.yaml --validate --fail-on-warn
+          diff -u openapi.yaml /tmp/openapi.yaml
+
+  backend-lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+      - run: pip install -r requirements-dev.txt
+      # Each check runs even when an earlier one fails, so one run reports everything.
+      - run: ruff check .
+      - run: ruff format --check .
+        if: ${{ !cancelled() }}
+      - run: mypy .
+        if: ${{ !cancelled() }}
+      - run: pip-audit -r requirements.txt
+        if: ${{ !cancelled() }}
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - name: Show what the formatter would change
+        if: failure()
+        run: npx prettier --write . > /dev/null && git diff
+      - run: npm run typecheck
+        if: ${{ !cancelled() }}
+      - name: The API types match the schema (run `make api`)
+        if: ${{ !cancelled() }}
+        run: npm run api:types && git diff --exit-code src/api/schema.d.ts
+      - run: npm test
+        if: ${{ !cancelled() }}
+      - run: npm run build
+        if: ${{ !cancelled() }}
+
+  # Builds the .deb and the Docker image and checks that each one installs, serves the
+  # application and uninstalls cleanly.
+  packages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gettext
+      - run: npm --prefix frontend ci && npm --prefix frontend run build
+      - run: packaging/build-deb.sh 0.0.0
+      - name: Install the .deb
+        run: sudo apt-get install -y ./dist/vibratto-metadata_0.0.0_all.deb
+      - name: The service answers
+        run: packaging/smoke-test.sh http://127.0.0.1:8000
+      - name: Removing keeps the data, purging deletes everything
+        run: |
+          sudo apt-get remove -y vibratto-metadata
+          test ! -e /opt/vibratto-metadata
+          sudo test -f /var/lib/vibratto-metadata/db.sqlite3
+          sudo test -f /etc/vibratto-metadata/vibratto-metadata.env
+          sudo apt-get purge -y vibratto-metadata
+          test ! -e /var/lib/vibratto-metadata
+          test ! -e /etc/vibratto-metadata
+          ! getent passwd vibratto-metadata
+          ! systemctl list-unit-files | grep -q vibratto-metadata
+      - name: Build the Docker image
+        run: docker build -t vibratto-metadata .
+      - name: The container answers
+        run: |
+          mkdir music
+          docker run -d --name vibratto -p 8000:8000 -e DJANGO_ALLOW_INSECURE_HTTP=1 \
+            -v vibratto-data:/data -v "$PWD/music:/data/music" vibratto-metadata
+          packaging/smoke-test.sh http://127.0.0.1:8000 || { docker logs vibratto; exit 1; }
+          docker logs vibratto 2>&1 | grep -q "Setup code: "
+          # The server runs unprivileged and can write to the mounted music folder.
+          test "$(docker exec vibratto stat -c %U /proc/1)" = vibratto
+          docker exec -u vibratto vibratto touch /data/music/.writable
+

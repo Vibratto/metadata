@@ -1,0 +1,43 @@
+default_install_hook_types: [pre-commit, pre-push]
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.3
+    hooks:
+      - id: ruff-check
+        files: ^backend/
+      - id: ruff-format
+        files: ^backend/
+  - repo: local
+    hooks:
+      - id: backend-mypy
+        name: backend types
+        entry: bash -c 'cd backend && mypy .'
+        language: system
+        files: ^backend/
+        pass_filenames: false
+      - id: frontend-lint
+        name: frontend lint
+        entry: npm --prefix frontend run lint
+        language: system
+        files: ^frontend/
+        pass_filenames: false
+      - id: frontend-typecheck
+        name: frontend types
+        entry: npm --prefix frontend run typecheck
+        language: system
+        files: ^frontend/
+        pass_filenames: false
+      - id: backend-tests
+        name: backend tests
+        entry: bash -c 'cd backend && python manage.py compilemessages -v0 && pytest'
+        language: system
+        stages: [pre-push]
+        always_run: true
+        pass_filenames: false
+      - id: frontend-tests
+        name: frontend tests
+        entry: npm --prefix frontend test
+        language: system
+        stages: [pre-push]
+        always_run: true
+        pass_filenames: false

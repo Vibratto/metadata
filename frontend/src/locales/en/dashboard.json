@@ -1,0 +1,62 @@
+{
+  "dashboard": {
+    "nav": "Dashboard",
+    "title": "Dashboard",
+    "library": "Library",
+    "summary": {
+      "artists": "Artists",
+      "albums": "Albums",
+      "recordings": "Recordings",
+      "tracks": "Tracks",
+      "downloaded": "Downloaded"
+    },
+    "jobs": {
+      "title": "Running jobs",
+      "empty": "No jobs are running.",
+      "progress": "{kind} progress",
+      "kind": {
+        "import": "Import",
+        "download": "Download",
+        "watch_check": "New releases check",
+        "maintenance": "Utilities"
+      }
+    },
+    "next": {
+      "title": "Next step",
+      "wait": {
+        "title": "Jobs are running",
+        "text": "Wait for them to finish; the dashboard refreshes by itself."
+      },
+      "empty": {
+        "title": "Your library is empty",
+        "text": "Start by importing artists from YouTube Music or a music folder you already have.",
+        "artists": "Import artists",
+        "folder": "Import a folder"
+      },
+      "download": {
+        "title": "Download what is pending",
+        "text": "{n} tracks are left to download.",
+        "action": "Go to Download"
+      },
+      "watch": {
+        "title": "All caught up",
+        "text": "Every track is downloaded. Keep an eye on new releases from your artists.",
+        "action": "Go to New releases"
+      }
+    },
+    "greeting": {
+      "morning": "Good morning, {name}",
+      "afternoon": "Good afternoon, {name}",
+      "evening": "Good evening, {name}"
+    },
+    "recent": {
+      "title": "Recent activity",
+      "all": "Open the log",
+      "empty": "No activity yet."
+    },
+    "actions": {
+      "artists": "Import artists",
+      "folder": "Import a folder"
+    }
+  }
+}

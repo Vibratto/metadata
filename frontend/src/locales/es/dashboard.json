@@ -1,0 +1,62 @@
+{
+  "dashboard": {
+    "nav": "Panel",
+    "title": "Panel",
+    "library": "Biblioteca",
+    "summary": {
+      "artists": "Artistas",
+      "albums": "Álbumes",
+      "recordings": "Grabaciones",
+      "tracks": "Canciones",
+      "downloaded": "Descargadas"
+    },
+    "jobs": {
+      "title": "Tareas en curso",
+      "empty": "No hay tareas en curso.",
+      "progress": "Progreso de {kind}",
+      "kind": {
+        "import": "Importación",
+        "download": "Descarga",
+        "watch_check": "Comprobación de novedades",
+        "maintenance": "Utilidades"
+      }
+    },
+    "next": {
+      "title": "Siguiente paso",
+      "wait": {
+        "title": "Hay tareas en marcha",
+        "text": "Espera a que terminen; el panel se actualiza solo."
+      },
+      "empty": {
+        "title": "Tu biblioteca está vacía",
+        "text": "Empieza importando artistas desde YouTube Music o una carpeta de música que ya tengas.",
+        "artists": "Importar artistas",
+        "folder": "Importar una carpeta"
+      },
+      "download": {
+        "title": "Descarga lo pendiente",
+        "text": "Quedan {n} canciones por descargar.",
+        "action": "Ir a Descargar"
+      },
+      "watch": {
+        "title": "Todo al día",
+        "text": "Todas tus canciones están descargadas. Vigila las novedades de tus artistas.",
+        "action": "Ir a Novedades"
+      }
+    },
+    "greeting": {
+      "morning": "Buenos días, {name}",
+      "afternoon": "Buenas tardes, {name}",
+      "evening": "Buenas noches, {name}"
+    },
+    "recent": {
+      "title": "Actividad reciente",
+      "all": "Ver el registro",
+      "empty": "Todavía no hay actividad."
+    },
+    "actions": {
+      "artists": "Importar artistas",
+      "folder": "Importar carpeta"
+    }
+  }
+}

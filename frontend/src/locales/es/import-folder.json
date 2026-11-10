@@ -1,0 +1,25 @@
+{
+  "importFolder": {
+    "title": "Importar una carpeta",
+    "intro": "Enlaza con la biblioteca la música que ya tienes descargada. Cada fichero se busca en YouTube Music por el artista, el álbum, el título y la duración de sus etiquetas, y se importa lo que falte. Los ficheros que no coinciden con seguridad se listan abajo y no se tocan. Los ficheros no se mueven ni se modifican.",
+    "folder": "Carpeta",
+    "hint": "Ruta dentro de la carpeta de descargas, por ejemplo «Artista/Álbum». Déjala vacía para recorrerla entera.",
+    "start": "Importar carpeta",
+    "result": "{linked} enlazados, {already} ya estaban enlazados y {unlinked} sin enlazar.",
+    "unlinked": {
+      "title": "Ficheros sin enlazar",
+      "file": "Fichero",
+      "reason": "Motivo"
+    },
+    "reason": {
+      "outside": "Enlace a un fichero fuera de la carpeta de descargas",
+      "unreadable": "No se puede leer el fichero",
+      "no_tags": "Sin etiquetas o sin título",
+      "not_found": "Sin coincidencia segura en YouTube Music",
+      "not_in_catalog": "Álbum o canción bloqueados",
+      "error": "Error al consultar YouTube Music",
+      "already_downloaded": "Canción ya descargada en otro fichero",
+      "ambiguous": "Está en varios álbumes y el fichero no dice en cuál"
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "utilities": {
+    "nav": "Utilidades",
+    "title": "Utilidades",
+    "intro": "Revisa la biblioteca descargada. Ninguna operación borra nada.",
+    "operations": "Operaciones",
+    "operation": {
+      "retag": "Volver a etiquetar los ficheros descargados",
+      "replaygain": "Recalcular el ReplayGain de toda la biblioteca",
+      "relocate": "Mover los ficheros a los nombres de la plantilla, sin etiquetar",
+      "check_files": "Comprobar que los ficheros siguen en disco",
+      "complete_artists": "Actualizar los perfiles de artista (imagen, descripción y audiencia)",
+      "lyrics": "Buscar las letras que faltan (LRCLIB y YouTube Music)",
+      "complete_albums": "Completar los álbumes con las pistas que faltan (consulta YouTube Music)"
+    },
+    "start": "Ejecutar",
+    "conflict": "Reetiquetar y ReplayGain no van en la misma ejecución que reubicar: deja que Navidrome escanee entre una y otra.",
+    "summary": {
+      "title": "Resumen",
+      "retag": "Ficheros etiquetados: {retagged}. Fallidos: {failed}.",
+      "replaygain": "ReplayGain: {albums} álbumes y {files} ficheros. Álbumes fallidos: {failed}.",
+      "relocate": "Ficheros movidos: {moved}. Ya en su sitio: {unchanged}. Fallidos: {failed}.",
+      "check_files": "Ficheros comprobados: {checked}. Faltan: {missing}.",
+      "missing": "Descargas sin fichero: {ids}.",
+      "complete_artists": "Artistas revisados: {reviewed}. Completados: {completed}. Sin cambios: {unchanged}. Con error: {errors}.",
+      "lyrics": "Letras guardadas: {found}. No encontradas: {not_found}. Sin respuesta: {failed}.",
+      "complete_albums": "Álbumes revisados: {albums}. Pistas añadidas: {tracks} ({reused_recordings} con una grabación ya conocida). Sin respuesta de YouTube Music: {errors}."
+    },
+    "backup": "Copia de la biblioteca"
+  }
+}

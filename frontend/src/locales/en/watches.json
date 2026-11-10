@@ -1,0 +1,68 @@
+{
+  "watches": {
+    "nav": "New releases",
+    "title": "New releases",
+    "intro": "Looks for new releases from the chosen artists every so often.",
+    "new": "New watch",
+    "columns": {
+      "name": "Name",
+      "artists": "Artists",
+      "interval": "Every",
+      "state": "Status"
+    },
+    "hours": "{n} hour | {n} hours",
+    "enabled": "Active",
+    "disabled": "Paused",
+    "autoDownload": "Automatic download",
+    "previous": "Previous",
+    "next": "Next",
+    "form": {
+      "createTitle": "New release watch",
+      "editTitle": "Edit “{name}”",
+      "name": "Name",
+      "interval": "Interval in hours",
+      "autoDownload": "Download whatever it finds automatically",
+      "enabled": "Active",
+      "artists": "Artists",
+      "noArtists": "No artists yet.",
+      "search": "Search the catalogue",
+      "searchButton": "Search",
+      "noResults": "No catalogue artist matches.",
+      "add": "Add {name}",
+      "up": "Move {name} up",
+      "down": "Move {name} down",
+      "remove": "Remove {name}",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "detail": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "check": "Check now",
+      "history": "Check history",
+      "back": "Back to New releases",
+      "confirmTitle": "Delete “{name}”?",
+      "confirmText": "The watch stops being checked. Anything already imported stays in the library.",
+      "confirm": "Yes, delete"
+    },
+    "runs": {
+      "finished": "Date",
+      "status": "Result",
+      "found": "New releases",
+      "detail": "Detail",
+      "succeeded": "Succeeded",
+      "failed": "Failed"
+    },
+    "filters": {
+      "search": "Search",
+      "ordering": "Sort by",
+      "default": "Default order",
+      "name": "Name (A-Z)",
+      "name_desc": "Name (Z-A)",
+      "next_run_at": "Next run",
+      "enabled": "Status",
+      "auto_download": "Automatic download",
+      "artist": "Artist"
+    }
+  }
+}

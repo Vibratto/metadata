@@ -1,0 +1,11 @@
+{
+  "trackUpload": {
+    "title": "Upload audio",
+    "intro": "If the audio for “{title}” cannot be found, upload it yourself: it will be converted and tagged with the track's data.",
+    "file": "Audio file",
+    "hint": "mp3, m4a, flac, opus, ogg or wav; 200 MB at most.",
+    "submit": "Upload",
+    "progress": "Upload progress",
+    "done": "Audio saved. The track is now downloaded."
+  }
+}

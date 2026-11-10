@@ -1,0 +1,80 @@
+{
+  "log": {
+    "nav": "Log",
+    "title": "Log",
+    "tabs": {
+      "label": "Log sections",
+      "activity": "Activity",
+      "jobs": "Jobs",
+      "technical": "Technical logs"
+    },
+    "filters": {
+      "dateFrom": "From",
+      "dateTo": "To",
+      "username": "User",
+      "action": "Action",
+      "objectType": "Object type",
+      "kind": "Job type",
+      "status": "Status",
+      "level": "Minimum level",
+      "module": "Module",
+      "task": "Job number",
+      "search": "Search the message",
+      "any": "All"
+    },
+    "columns": {
+      "date": "Date",
+      "user": "User",
+      "action": "Action",
+      "object": "Object",
+      "id": "No.",
+      "kind": "Type",
+      "status": "Status",
+      "started": "Started",
+      "progress": "Progress",
+      "level": "Level",
+      "module": "Module",
+      "message": "Message"
+    },
+    "objectType": {
+      "catalog": {
+        "artist": "Artist",
+        "album": "Album",
+        "track": "Track"
+      },
+      "jobs": {
+        "jobrun": "Job"
+      },
+      "watches": {
+        "watch": "Release watch"
+      },
+      "proxies": {
+        "proxy": "Proxy"
+      },
+      "auth": {
+        "user": "User"
+      }
+    },
+    "kind": {
+      "import": "Import",
+      "download": "Download",
+      "maintenance": "Maintenance",
+      "watch_check": "New releases"
+    },
+    "level": {
+      "10": "Debug",
+      "20": "Info",
+      "30": "Warning",
+      "40": "Error",
+      "50": "Critical"
+    },
+    "system": "System",
+    "history": "View history",
+    "trace": "Trace",
+    "detailTitle": "Job no. {id}",
+    "page": "Page {page} · {count} in total",
+    "previous": "Previous",
+    "next": "Next",
+    "object": "{type} no. {id}"
+  }
+}

@@ -1,0 +1,1 @@
+"""App ``catalog``. / ``catalog`` app."""

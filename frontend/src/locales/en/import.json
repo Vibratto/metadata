@@ -1,0 +1,27 @@
+{
+  "import": {
+    "nav": "Import",
+    "title": "Import artists",
+    "search": {
+      "label": "Artist or YouTube Music link",
+      "submit": "Search",
+      "empty": "Type an artist name, or paste their YouTube Music link, to look them up.",
+      "none": "YouTube Music found no artist matching “{q}”.",
+      "results": "Results"
+    },
+    "artist": {
+      "albums": "{n} album | {n} albums",
+      "inCatalog": "Already in the library",
+      "blocked": "Blocked",
+      "singles": "{n} single or EP | {n} singles and EPs"
+    },
+    "selected": {
+      "title": "Selected ({n})",
+      "remove": "Remove {name}"
+    },
+    "start": "Import {n} artist | Import {n} artists",
+    "folder": "Import a folder",
+    "intro": "Search YouTube Music, pick the artists and bring in their whole discography.",
+    "related": "Their related artists are saved as profiles. See them in the Related tab."
+  }
+}

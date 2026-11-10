@@ -1,0 +1,31 @@
+{
+  "theme": {
+    "title": "Tema",
+    "label": "Tema: {theme}",
+    "auto": "automático",
+    "light": "claro",
+    "dark": "oscuro"
+  },
+  "search": {
+    "label": "Buscar en tu biblioteca",
+    "placeholder": "Buscar en tu biblioteca…",
+    "scopeLabel": "Dónde buscar",
+    "scope": {
+      "all": "Todo",
+      "artists": "Artistas",
+      "albums": "Álbumes",
+      "tracks": "Canciones"
+    },
+    "more": {
+      "artists": "Ver {n} artista | Ver los {n} artistas",
+      "albums": "Ver {n} álbum | Ver los {n} álbumes",
+      "tracks": "Ver {n} canción | Ver las {n} canciones"
+    },
+    "loading": "Buscando…",
+    "empty": "Sin resultados",
+    "found": "{n} resultados"
+  },
+  "jobsIndicator": {
+    "count": "{n} tarea en curso | {n} tareas en curso"
+  }
+}

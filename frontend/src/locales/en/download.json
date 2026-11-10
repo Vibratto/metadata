@@ -1,0 +1,30 @@
+{
+  "download": {
+    "nav": "Download",
+    "title": "Download",
+    "pending": "{count} pending tracks",
+    "columns": {
+      "title": "Track",
+      "artists": "Artists",
+      "preview": "Preview"
+    },
+    "filters": {
+      "artist": "Artist",
+      "album": "Album",
+      "search": "Search by title or artist",
+      "all": "All"
+    },
+    "page": "Page {page}",
+    "previous": "Previous",
+    "next": "Next",
+    "chosen": "Download selected ({count})",
+    "all": "Download all pending",
+    "running": "A download is already running; you can follow it here.",
+    "preview": "Preview",
+    "previewOf": "Preview of {title}",
+    "searching": "Looking for the video…",
+    "closePreview": "Close the preview",
+    "selected": "{count} track selected | {count} tracks selected",
+    "copy": "Copied from another album"
+  }
+}

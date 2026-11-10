@@ -1,0 +1,379 @@
+@import '@fontsource-variable/inter';
+@import './tokens.css';
+
+/* Element styles, so every view looks right without repeating CSS. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+h1 {
+  font-size: 1.75rem;
+  font-weight: 680;
+}
+h2 {
+  font-size: 1.125rem;
+  font-weight: 640;
+}
+h3 {
+  font-size: 1rem;
+  font-weight: 620;
+}
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--color-accent);
+  font-weight: 550;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+input:not([type='checkbox'], [type='radio'], [type='file']),
+select,
+textarea {
+  min-height: var(--touch-target);
+  padding: 0 0.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  /* 16 px prevents iOS from zooming in when the field gets focus. */
+  font: inherit;
+  font-size: 1rem;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+textarea {
+  padding: 0.625rem 0.875rem;
+}
+select {
+  appearance: none;
+  padding-right: 2.25rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a8691' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  background-size: 1rem;
+}
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  border-color: var(--color-accent);
+  outline: none;
+  box-shadow: 0 0 0 4px var(--color-accent-soft);
+}
+input[type='checkbox'],
+input[type='radio'] {
+  width: 1.125rem;
+  height: 1.125rem;
+  accent-color: var(--color-primary);
+}
+label {
+  font-size: 0.875rem;
+  font-weight: 550;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th {
+  color: var(--color-faint);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+code,
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+
+/* ---------- Piezas comunes / Shared pieces ---------- */
+
+/* Buttons (BaseButton and button-like links). */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  padding: 0 1.125rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: 0.90625rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    filter 0.15s;
+}
+.btn:hover {
+  text-decoration: none;
+  filter: brightness(0.96);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: none;
+}
+.btn .icon {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+.btn--primary {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+}
+.btn--primary:hover {
+  background: var(--color-primary-hover);
+  filter: none;
+}
+.btn--accent {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+.btn--secondary {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+.btn--secondary:hover {
+  border-color: var(--color-faint);
+  filter: none;
+}
+.btn--danger {
+  border-color: color-mix(in srgb, var(--color-danger) 35%, var(--color-border));
+  background: var(--color-surface);
+  color: var(--color-danger);
+}
+.btn--danger:hover {
+  background: var(--color-danger-soft);
+  filter: none;
+}
+.btn--ghost {
+  background: transparent;
+  color: var(--color-muted);
+}
+.btn--ghost:hover {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  filter: none;
+}
+
+/* Card: white surface with a soft border. */
+.card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+/* Page header: title, subtitle and actions. */
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.page-head > :first-child {
+  flex: 1 1 18rem;
+}
+.page-head__sub {
+  margin-top: var(--space-1);
+  color: var(--color-muted);
+}
+.page-head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Tabs as a segmented control (links with `aria-current`). */
+.segmented {
+  display: inline-flex;
+  max-width: 100%;
+  gap: 2px;
+  padding: 4px;
+  overflow-x: auto;
+  border-radius: var(--radius);
+  background: var(--color-surface-2);
+}
+.segmented > a {
+  display: flex;
+  flex: 1 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.25rem;
+  padding: 0 1rem;
+  border-radius: var(--radius-sm);
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  font-weight: 550;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.segmented > a[aria-current='page'] {
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+  color: var(--color-text);
+}
+
+/* Small status pill. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 1.625rem;
+  padding: 0 0.625rem;
+  border-radius: 999px;
+  background: var(--color-surface-2);
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  font-weight: 550;
+  white-space: nowrap;
+}
+.chip--ok {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+.chip--accent {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+.chip--danger {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+/* Floating action bar shown when items are selected. */
+.action-bar {
+  position: sticky;
+  bottom: calc(var(--nav-bar-height) + var(--space-3));
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0.625rem 0.625rem 0.625rem 1.25rem;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary);
+  box-shadow: var(--shadow-float);
+  color: var(--color-primary-contrast);
+  font-weight: 600;
+}
+.action-bar > :first-child {
+  flex: 1;
+}
+.action-bar label {
+  color: inherit;
+}
+
+/* Named forms and fieldsets in views become cards; nested ones skip the frame. */
+.app-main form[name]:not(fieldset form, .card form),
+.app-main fieldset:not(fieldset fieldset) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 44rem;
+  margin: 0;
+  padding: 1.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+.app-main form[name] > .btn:last-child {
+  align-self: flex-start;
+}
+legend {
+  float: left;
+  width: 100%;
+  margin-bottom: var(--space-2);
+  padding: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 640;
+}
+
+/* Screen-reader only. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- Layout ----------
+   Mobile-first: the base layout is the mobile one; the fixed bottom bar reserves its height.
+   From 1024 px up the navigation moves to the side. */
+.app-main {
+  width: 100%;
+  max-width: 80rem;
+  padding: var(--space-2) var(--space-3);
+  padding-bottom: calc(var(--nav-bar-height) + var(--space-5) + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 600px) {
+  h1 {
+    font-size: 2rem;
+  }
+  .app-main {
+    padding-inline: var(--space-4);
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-main {
+    padding: var(--space-2) var(--space-5) var(--space-5);
+  }
+  .app-shell {
+    margin-left: var(--nav-side-width);
+  }
+  .action-bar {
+    bottom: var(--space-4);
+  }
+}

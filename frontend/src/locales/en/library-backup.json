@@ -1,0 +1,27 @@
+{
+  "libraryBackup": {
+    "title": "Library backup",
+    "intro": "Save the library to a JSON file or bring it back on this or another installation.",
+    "export": {
+      "title": "Export",
+      "link": "Download the backup"
+    },
+    "restore": {
+      "title": "Import",
+      "file": "Backup file (JSON)",
+      "hint": "Only missing items are added: existing ones are left unchanged.",
+      "previewTitle": "Backup contents",
+      "kind": "Kind",
+      "total": "In the backup",
+      "existing": "Already present",
+      "new": "New",
+      "confirm": "Import the backup"
+    },
+    "kinds": {
+      "artists": "Artists",
+      "albums": "Albums",
+      "tracks": "Tracks",
+      "downloads": "Downloads"
+    }
+  }
+}

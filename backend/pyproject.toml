@@ -1,0 +1,70 @@
+# Tool configuration only; dependencies live in requirements*.txt.
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+# Django apps live at the backend/ root, so they are first-party for import sorting.
+src = ["."]
+extend-exclude = ["migrations"]
+
+[tool.ruff.lint]
+# S: security, I: import order, B: bugbear, UP: modern syntax.
+select = ["E", "F", "I", "B", "UP", "S"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "S105", "S106"]
+"config/settings/*" = ["F405"]
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+strict = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings.test"
+
+[[tool.mypy.overrides]]
+# These packages ship neither stubs nor py.typed.
+module = ["django_db_logger.*", "simple_history.*", "axes.*", "ytmusicapi.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# simple_history's base classes arrive as ``Any``.
+module = ["simple_history.*", "catalog.*"]
+disallow_subclassing_any = false
+
+[[tool.mypy.overrides]]
+# factory_boy does not type its declarations, and its factory calls do not evaluate to
+# the model.
+module = ["catalog.factories"]
+disallow_untyped_calls = false
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+# factory_boy factories are typed as the factory, not the model they build.
+disable_error_code = [
+    "no-untyped-call",
+    "attr-defined",
+    "assignment",
+    "arg-type",
+    "comparison-overlap",
+    "misc",
+    "return-value",
+    "no-any-return",
+    "union-attr",
+    "func-returns-value",
+]
+
+[[tool.mypy.overrides]]
+# mutagen's constructors are not annotated.
+module = ["integrations.audio.*", "tests.integrations.audio.*"]
+disallow_untyped_calls = false
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+addopts = "-q --cov=. --cov-branch --cov-report=term:skip-covered"
+
+[tool.coverage.run]
+omit = ["tests/*", "manage.py", "config/wsgi.py", "config/asgi.py", "config/settings/dev.py"]
+
+[tool.coverage.report]
+fail_under = 90

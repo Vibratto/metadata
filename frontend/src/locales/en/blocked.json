@@ -1,0 +1,33 @@
+{
+  "blocked": {
+    "nav": "Blocked",
+    "title": "Blocked",
+    "intro": "Blocked items are not imported or downloaded. Unblock them to allow them again.",
+    "loading": "Loading…",
+    "empty": "Nothing is blocked.",
+    "columns": {
+      "kind": "Type",
+      "name": "Name",
+      "created_at": "Blocked on",
+      "actions": "Actions",
+      "external_id": "YouTube Music id"
+    },
+    "kind": {
+      "artist": "Artist",
+      "album": "Album",
+      "track": "Track"
+    },
+    "unblock": "Unblock",
+    "confirm": {
+      "title": "Unblock",
+      "text": "Unblock “{name}”? It will be imported and downloaded as usual again."
+    },
+    "done": "Unblocked.",
+    "pager": {
+      "label": "Pages",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {page}"
+    }
+  }
+}

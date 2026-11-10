@@ -1,0 +1,80 @@
+{
+  "log": {
+    "nav": "Registro",
+    "title": "Registro",
+    "tabs": {
+      "label": "Secciones del registro",
+      "activity": "Actividad",
+      "jobs": "Tareas",
+      "technical": "Logs técnicos"
+    },
+    "filters": {
+      "dateFrom": "Desde",
+      "dateTo": "Hasta",
+      "username": "Usuario",
+      "action": "Acción",
+      "objectType": "Tipo de objeto",
+      "kind": "Tipo de tarea",
+      "status": "Estado",
+      "level": "Nivel mínimo",
+      "module": "Módulo",
+      "task": "Número de tarea",
+      "search": "Buscar en el mensaje",
+      "any": "Todos"
+    },
+    "columns": {
+      "date": "Fecha",
+      "user": "Usuario",
+      "action": "Acción",
+      "object": "Objeto",
+      "id": "N.º",
+      "kind": "Tipo",
+      "status": "Estado",
+      "started": "Inicio",
+      "progress": "Progreso",
+      "level": "Nivel",
+      "module": "Módulo",
+      "message": "Mensaje"
+    },
+    "objectType": {
+      "catalog": {
+        "artist": "Artista",
+        "album": "Álbum",
+        "track": "Canción"
+      },
+      "jobs": {
+        "jobrun": "Tarea"
+      },
+      "watches": {
+        "watch": "Búsqueda de novedades"
+      },
+      "proxies": {
+        "proxy": "Proxy"
+      },
+      "auth": {
+        "user": "Usuario"
+      }
+    },
+    "kind": {
+      "import": "Importación",
+      "download": "Descarga",
+      "maintenance": "Mantenimiento",
+      "watch_check": "Novedades"
+    },
+    "level": {
+      "10": "Depuración",
+      "20": "Información",
+      "30": "Aviso",
+      "40": "Error",
+      "50": "Crítico"
+    },
+    "system": "Sistema",
+    "history": "Ver historial",
+    "trace": "Traza",
+    "detailTitle": "Tarea n.º {id}",
+    "page": "Página {page} · {count} en total",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "object": "{type} n.º {id}"
+  }
+}

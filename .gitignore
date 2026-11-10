@@ -1,0 +1,28 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Django
+*.sqlite3*
+backend/staticfiles/
+# Compiled translations are built with `manage.py compilemessages`.
+*.mo
+
+# Node
+node_modules/
+dist/
+coverage/
+
+# Local data
+music/
+*.log
+
+# Secrets: only .env.example is committed
+.env

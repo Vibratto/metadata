@@ -1,0 +1,17 @@
+-r requirements.txt
+ruff
+mypy
+django-stubs
+djangorestframework-stubs
+pytest
+pytest-django
+pytest-cov
+factory_boy
+responses
+types-requests
+django-migration-linter
+django-test-migrations
+types-yt-dlp
+pip-audit
+schemathesis
+uv

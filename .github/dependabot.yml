@@ -1,0 +1,25 @@
+# Weekly alerts for new versions. yt-dlp is installed unpinned and needs none.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /backend
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: yt-dlp
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+    # typescript-eslint still requires typescript <6.1.
+    ignore:
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
