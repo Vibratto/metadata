@@ -128,6 +128,7 @@ jobs:
             -v vibratto-data:/data -v "$PWD/music:/data/music" vibratto-metadata
           packaging/smoke-test.sh http://127.0.0.1:8000 || { docker logs vibratto; exit 1; }
           docker logs vibratto 2>&1 | grep -q "Setup code: "
+          ! docker logs vibratto 2>&1 | grep -i "error"
           # The server runs unprivileged and can write to the mounted music folder.
           test "$(docker exec vibratto stat -c %U /proc/1)" = vibratto
           docker exec -u vibratto vibratto touch /data/music/.writable

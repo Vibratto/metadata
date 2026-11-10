@@ -7,7 +7,8 @@ set -e
 if [ "$(id -u)" = 0 ]; then
   mkdir -p /data/music
   chown vibratto:vibratto /data /data/music
-  exec setpriv --reuid=vibratto --regid=vibratto --init-groups "$0" "$@"
+  # setpriv keeps root's HOME, where the server cannot write its control socket.
+  HOME=/data exec setpriv --reuid=vibratto --regid=vibratto --init-groups "$0" "$@"
 fi
 
 # The secret key and the setup code are generated on the first start and kept with the data,
