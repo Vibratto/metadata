@@ -6,7 +6,7 @@ the application only sees the dataclasses in :mod:`integrations.ytmusic.models`.
 """
 
 import re
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from typing import Any
 
 from integrations.ytmusic.models import (
@@ -28,6 +28,8 @@ from integrations.ytmusic.names import merge_artists, split_featured
 YTMUSIC_URL = "https://music.youtube.com"
 
 _CHANNEL_ID = re.compile(r"UC[\w-]{22}")
+# "@handle" on its own or as the first path segment of a YouTube (Music) URL.
+_HANDLE = re.compile(r"^(?:(?:https?://)?(?:[\w-]+\.)?youtube\.com/)?@([\w.-]+)", re.IGNORECASE)
 _COUNT = re.compile(r"(\d+(?:[.,]\d+)*)\s*(?:([KMB])(?![\w-]))?", re.IGNORECASE)
 _MULTIPLIERS = {"K": 1_000, "M": 1_000_000, "B": 1_000_000_000}
 _THUMBNAIL_SIZE = re.compile(r"=w\d+-h\d+")
@@ -47,6 +49,31 @@ def parse_channel_id(text: str) -> str | None:
     """
     match = _CHANNEL_ID.search(text)
     return match.group(0) if match else None
+
+
+def parse_handle(text: str) -> str | None:
+    """Extract the handle from "@name" or from a YouTube (Music) URL such as ".../@name".
+
+    A handle is not an id: it only serves as a search term. Returns ``None`` for anything
+    else, e.g. an artist name.
+    """
+    match = _HANDLE.match(text.strip())
+    return match.group(1) if match else None
+
+
+def _skip_headerless_shelves(parse: Callable[[list[Any]], Any]) -> Callable[[list[Any]], Any]:
+    """Wrap ytmusicapi's artist page parser so it survives shelves without a header.
+
+    It assumes every carousel on the page has one, but promo shelves ("watch the new music
+    video") do not, and a single one made the whole artist fail with ``KeyError``.
+    """
+
+    def skipping_headerless_shelves(results: list[Any]) -> Any:
+        return parse(
+            [r for r in results if "header" in r.get("musicCarouselShelfRenderer", {"header": 1})]
+        )
+
+    return skipping_headerless_shelves
 
 
 def parse_count(text: object) -> int | None:
@@ -178,6 +205,8 @@ class YTMusicClient:
             from ytmusicapi import YTMusic
 
             self._api = YTMusic(requests_session=self._session)
+            parser = self._api.parser
+            parser.parse_channel_contents = _skip_headerless_shelves(parser.parse_channel_contents)
         return self._api
 
     def _call(self, method: str, *args: Any, **kwargs: Any) -> Any:

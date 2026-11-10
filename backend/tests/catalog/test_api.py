@@ -500,6 +500,18 @@ def test_lookup_by_name_searches(api: APIClient, lookup: FakeLookup) -> None:
     assert [r["name"] for r in found] == ["Los Cometas", "Cometas Tribute"]
 
 
+@pytest.mark.parametrize(
+    "query",
+    ["https://music.youtube.com/@LosCometas", "https://music.youtube.com/@LosCometas?si=x"],
+)
+def test_lookup_by_handle_link_searches_the_handle(
+    api: APIClient, lookup: FakeLookup, query: str
+) -> None:
+    found = _results(api, "ytmusic/artists", q=query)
+    assert lookup.calls == [("search", "LosCometas")]
+    assert [r["name"] for r in found] == ["Los Cometas", "Cometas Tribute"]
+
+
 @pytest.mark.parametrize("query", [CHANNEL, f"https://music.youtube.com/channel/{CHANNEL}?si=x"])
 def test_lookup_by_link_or_id_returns_that_artist_with_its_discography_size(
     api: APIClient, lookup: FakeLookup, query: str

@@ -16,8 +16,9 @@ from integrations.ytmusic import (
     YTMusicClient,
     YTMusicError,
     parse_channel_id,
+    parse_handle,
 )
-from integrations.ytmusic.client import parse_count
+from integrations.ytmusic.client import _skip_headerless_shelves, parse_count
 
 CHANNEL = "UCmMUZbaYdNH0bEd1PAlAqsA"
 OTHER = "UC0000000000000000000000"
@@ -67,6 +68,43 @@ def artist_page(**overrides: Any) -> dict[str, Any]:
         },
     }
     return page | overrides
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("https://music.youtube.com/@QuevedoPD", "QuevedoPD"),
+        ("https://music.youtube.com/@quevedopd?si=3U5lujAdyIZSzm46", "quevedopd"),
+        ("https://www.youtube.com/@lucho.rk/videos", "lucho.rk"),
+        ("youtube.com/@some-artist_1", "some-artist_1"),
+        ("  @luchork ", "luchork"),
+        ("Quevedo", None),
+        ("mail@example.com", None),
+        ("https://example.com/@someone", None),
+        (f"https://music.youtube.com/channel/{CHANNEL}", None),
+        ("", None),
+    ],
+)
+def test_parse_handle(text: str, expected: str | None) -> None:
+    assert parse_handle(text) == expected
+
+
+def test_shelves_without_a_header_are_skipped() -> None:
+    # A "watch the new video" promo shelf has no header, and ytmusicapi's artist page
+    # parser raises KeyError on it.
+    seen: list[list[Any]] = []
+    parse = _skip_headerless_shelves(lambda results: seen.append(results) or "parsed")
+    albums = {"musicCarouselShelfRenderer": {"header": {"title": "Albums"}, "contents": []}}
+    promo = {"musicCarouselShelfRenderer": {"contents": []}}
+    description = {"musicDescriptionShelfRenderer": {"description": "About"}}
+    assert parse([albums, promo, description]) == "parsed"
+    assert seen == [[albums, description]]
+
+
+def test_the_real_parser_is_wrapped_once() -> None:
+    client = YTMusicClient()
+    assert client.api.parser.parse_channel_contents.__name__ == "skipping_headerless_shelves"
+    assert client.api is client.api
 
 
 def test_artist_keeps_the_id_it_was_asked_for() -> None:
