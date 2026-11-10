@@ -32,7 +32,7 @@ const button = (wrapper: Awaited<ReturnType<typeof mountView>>['wrapper'], text:
   wrapper.findAll('button').find((b) => b.text() === text)!
 
 describe('LibraryView', () => {
-  // Other areas (Download) also mock the library lists: here the Library ones win.
+  // Other areas also mock the library lists: here the Library ones win.
   let settle: () => Promise<void>
   beforeEach(() => {
     server.use(...libraryHandlers)
@@ -328,7 +328,7 @@ describe('LibraryView', () => {
     const dialog = wrapper.get('dialog[open]')
     expect(dialog.get('h2').text()).toBe('Import discography')
     expect(dialog.text()).toContain('Import every album, single and track of Justice?')
-    await button(wrapper, 'Close').trigger('click')
+    await dialog.get('.dialog__actions button').trigger('click')
     await settle()
     expect(wrapper.find('dialog[open]').exists()).toBe(false)
     expect(posts).toBe(0)
@@ -457,5 +457,176 @@ describe('LibraryView', () => {
 
   it('formats the duration and leaves an unknown one empty', () => {
     expect([duration(65), duration(null)]).toEqual(['1:05', ''])
+  })
+})
+
+describe('downloads from the Tracks tab', () => {
+  type Wrapper = Awaited<ReturnType<typeof mountView>>['wrapper']
+  const RUNS = '/api/v1/jobs/runs/'
+  const run = (fields: Record<string, unknown> = {}) => ({
+    id: 7,
+    kind: 'download',
+    status: 'running',
+    done: 1,
+    total: 4,
+    current: 'Giorgio by Moroder',
+    summary: {},
+    ...fields,
+  })
+  const page = (results: unknown[]) =>
+    HttpResponse.json({ count: results.length, next: null, previous: null, results })
+
+  let settle: () => Promise<void>
+  let launched: unknown[]
+  beforeEach(() => {
+    launched = []
+    server.use(
+      ...libraryHandlers,
+      // No download is running, and one that starts is finished by the first poll.
+      http.get(RUNS, () => page([])),
+      http.post(RUNS, async ({ request }) => {
+        launched.push(await request.json())
+        return HttpResponse.json(run(), { status: 201 })
+      }),
+      http.get(`${RUNS}7/`, () => HttpResponse.json(run({ status: 'succeeded' }))),
+    )
+    settle = trackRequests()
+  })
+  afterEach(() => server.events.removeAllListeners())
+
+  async function mount(path = '/library?tab=tracks') {
+    const ctx = await mountView(LibraryView, path)
+    await settle()
+    return ctx
+  }
+  const boxes = (wrapper: Wrapper) => wrapper.findAll('tbody input[type="checkbox"]')
+
+  it('only tracks that are not downloaded yet can be ticked', async () => {
+    const { wrapper } = await mount()
+    expect(boxes(wrapper).map((b) => b.attributes('aria-label'))).toEqual([
+      'Select Giorgio by Moroder to download',
+    ])
+    expect(wrapper.find('.action-bar').exists()).toBe(false)
+  })
+
+  it('other tabs have no download controls and ask for no download', async () => {
+    let asked = 0
+    server.use(http.get(RUNS, () => (asked++, page([]))))
+    const { wrapper } = await mount('/library?tab=albums')
+    expect(wrapper.text()).not.toContain('Download all pending')
+    expect(asked).toBe(0)
+  })
+
+  it('downloads the ticked tracks and clears the selection when done', async () => {
+    const seen = spy('tracks')
+    const { wrapper } = await mount()
+    await boxes(wrapper)[0]!.setValue(true)
+    expect(wrapper.get('.action-bar').text()).toContain('1 track selected')
+    await button(wrapper, 'Download selected').trigger('click')
+    await vi.waitFor(() => expect(wrapper.get('.job__status').text()).toContain('Finished'))
+    expect(launched).toEqual([{ kind: 'download', params: { track_ids: [101] } }])
+    // The pending tracks have changed: the list is asked for again.
+    await vi.waitFor(() => expect(seen).toHaveLength(2))
+    expect(wrapper.find('.action-bar').exists()).toBe(false)
+  })
+
+  it('unticking, or “Clear”, empties the selection', async () => {
+    const { wrapper } = await mount()
+    await boxes(wrapper)[0]!.setValue(true)
+    await boxes(wrapper)[0]!.setValue(false)
+    expect(wrapper.find('.action-bar').exists()).toBe(false)
+    await boxes(wrapper)[0]!.setValue(true)
+    await button(wrapper, 'Clear').trigger('click')
+    expect(wrapper.find('.action-bar').exists()).toBe(false)
+    expect((boxes(wrapper)[0]!.element as HTMLInputElement).checked).toBe(false)
+    expect(launched).toEqual([])
+  })
+
+  it('the selection survives a search, which mounts a new list', async () => {
+    const { wrapper, router } = await mount()
+    await boxes(wrapper)[0]!.setValue(true)
+    await router.push('/library?tab=tracks&search=giorgio')
+    await settle()
+    expect(wrapper.get('.action-bar').text()).toContain('1 track selected')
+    expect((boxes(wrapper)[0]!.element as HTMLInputElement).checked).toBe(true)
+  })
+
+  it('downloads every pending track', async () => {
+    const { wrapper } = await mount()
+    await button(wrapper, 'Download all pending').trigger('click')
+    await vi.waitFor(() => expect(wrapper.get('.job__status').text()).toContain('Finished'))
+    expect(launched).toEqual([{ kind: 'download', params: { all_pending: true } }])
+  })
+
+  it('“Pending only” filters the list and can be switched off', async () => {
+    const { wrapper, router } = await mount()
+    const toggle = () => button(wrapper, 'Pending only')
+    expect(toggle().attributes('aria-pressed')).toBe('false')
+    await toggle().trigger('click')
+    await vi.waitFor(() => expect(router.currentRoute.value.query.downloaded).toBe('false'))
+    expect(toggle().attributes('aria-pressed')).toBe('true')
+    await toggle().trigger('click')
+    await vi.waitFor(() => expect(router.currentRoute.value.query.downloaded).toBeUndefined())
+  })
+
+  it('follows a download that is already running and does not allow another', async () => {
+    server.use(
+      http.get(RUNS, () => page([run()])),
+      http.get(`${RUNS}7/`, () => HttpResponse.json(run())),
+    )
+    const { wrapper } = await mount()
+    await vi.waitFor(() => expect(wrapper.get('.job__status').text()).toContain('Running'))
+    expect(wrapper.text()).toContain('A download is running')
+    expect(button(wrapper, 'Download all pending').attributes('disabled')).toBeDefined()
+    wrapper.unmount()
+  })
+
+  it('does not follow the latest download if it already finished', async () => {
+    server.use(http.get(RUNS, () => page([run({ status: 'failed' })])))
+    const { wrapper } = await mount()
+    expect(wrapper.find('.job__status').exists()).toBe(false)
+    expect(button(wrapper, 'Download all pending').attributes('disabled')).toBeUndefined()
+  })
+
+  it('if another one has started meanwhile (409), it follows that one', async () => {
+    let latest: unknown[] = []
+    server.use(
+      http.get(RUNS, () => page(latest)),
+      http.post(RUNS, () => {
+        latest = [run()]
+        return HttpResponse.json({ detail: 'A job is already running.' }, { status: 409 })
+      }),
+      http.get(`${RUNS}7/`, () => HttpResponse.json(run())),
+    )
+    const { wrapper } = await mount()
+    await button(wrapper, 'Download all pending').trigger('click')
+    await vi.waitFor(() => expect(wrapper.get('.job__status').text()).toContain('Running'))
+    wrapper.unmount()
+  })
+
+  it('shows the error if the latest download cannot be loaded', async () => {
+    server.use(http.get(RUNS, () => new HttpResponse(null, { status: 500 })))
+    const { wrapper } = await mount()
+    await vi.waitFor(() => expect(wrapper.text()).toContain('The server failed'))
+  })
+
+  it('marks the pending tracks whose audio will be copied from another album', async () => {
+    server.use(
+      http.get('/api/v1/catalog/tracks/', () =>
+        page([
+          { id: 300, title: 'Copy me', artists: [], downloaded: false, copyable: true },
+          { id: 301, title: 'Have me', artists: [], downloaded: true, copyable: true },
+        ]),
+      ),
+    )
+    const { wrapper } = await mount()
+    const rows = wrapper.findAll('tbody tr')
+    expect(rows[0]!.text()).toContain('Copied from another album')
+    expect(rows[1]!.text()).not.toContain('Copied from another album')
+  })
+
+  it('old links to the download screen land on the pending tracks', async () => {
+    const { router } = await mount('/download')
+    expect(router.currentRoute.value.fullPath).toBe('/library?tab=tracks&downloaded=false')
   })
 })

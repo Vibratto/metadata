@@ -153,7 +153,7 @@ describe('DashboardView', () => {
     it('with tracks left to download it suggests downloading', async () => {
       const step = await next()
       expect(step.text()).toContain('319')
-      expect(step.get('a').attributes('href')).toBe('/download')
+      expect(step.get('a').attributes('href')).toBe('/library?tab=tracks&downloaded=false')
     })
 
     it('with everything downloaded it suggests watching new releases', async () => {

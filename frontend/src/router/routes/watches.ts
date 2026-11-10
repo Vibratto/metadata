@@ -10,7 +10,7 @@ export default [
     path: '/watches',
     name: 'watches',
     component: WatchesView,
-    meta: { navLabel: 'watches.nav', navGroup: 'more', navOrder: 20, navIcon: 'bell' },
+    meta: { navLabel: 'watches.nav', navGroup: 'main', navOrder: 40, navIcon: 'bell' },
   },
   { path: '/watches/new', name: 'watches-new', component: WatchFormView },
   { path: '/watches/:id(\\d+)', name: 'watch', component: WatchView },

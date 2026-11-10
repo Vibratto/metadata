@@ -161,6 +161,21 @@
       "import": "Import discography",
       "confirm": "Import every album, single and track of {name}? This can take a few minutes.",
       "suggested": "Suggested"
+    },
+    "downloads": {
+      "all": "Download all pending",
+      "chosen": "Download selected",
+      "selected": "{count} track selected | {count} tracks selected",
+      "clear": "Clear",
+      "running": "A download is running; you can follow it here.",
+      "pendingOnly": "Pending only",
+      "select": "Select {title} to download",
+      "copy": "Copied from another album"
+    },
+    "preview": {
+      "open": "Preview",
+      "of": "Preview of {title}",
+      "searching": "Looking for the video…"
     }
   }
 }

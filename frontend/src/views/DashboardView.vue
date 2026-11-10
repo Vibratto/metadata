@@ -170,7 +170,11 @@ onUnmounted(() => clearInterval(timer))
           <p v-else-if="nextStep.key !== 'wait'" class="next-step__actions">
             <RouterLink
               class="btn btn--accent"
-              :to="{ name: nextStep.key === 'download' ? 'download' : 'watches' }"
+              :to="
+                nextStep.key === 'download'
+                  ? { name: 'library', query: { tab: 'tracks', downloaded: 'false' } }
+                  : { name: 'watches' }
+              "
               >{{ t(`dashboard.next.${nextStep.key}.action`) }}</RouterLink
             >
           </p>

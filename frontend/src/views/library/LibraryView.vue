@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, provide, reactive } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
 import LibraryList from './LibraryList.vue'
 import { TABS, type Tab } from './kinds'
+import { TRACK_SELECTION } from './useTrackDownloads'
 
 /**
  * Library: one tab per kind of item, plus the related artists saved as profiles. The tab
@@ -13,6 +14,8 @@ import { TABS, type Tab } from './kinds'
 const { t } = useI18n()
 const route = useRoute()
 const tab = computed<Tab>(() => TABS.find((k) => k === route.query.tab) ?? 'artists')
+// Tracks ticked for download: kept here so a search, which mounts a new list, keeps them.
+provide(TRACK_SELECTION, reactive(new Set<number>()))
 </script>
 
 <template>

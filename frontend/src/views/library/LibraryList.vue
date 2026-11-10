@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import AppIcon from '../../components/AppIcon.vue'
@@ -16,6 +16,7 @@ import JobRunPanel from '../../components/JobRunPanel.vue'
 import ResponsiveList from '../../components/ResponsiveList.vue'
 import VideoPreviewDialog from '../../components/VideoPreviewDialog.vue'
 import { useVideoPreview } from '../../composables/useVideoPreview'
+import { useTrackDownloads } from './useTrackDownloads'
 import { entityName } from '../../composables/useEntityLabels'
 import { useJobRun } from '../../composables/useJobRun'
 import { usePagedList } from '../../composables/usePagedList'
@@ -66,6 +67,13 @@ watch(
   },
 )
 const { preview, showPreview, closePreview } = useVideoPreview()
+
+// Tracks are downloaded from their own list: every pending one, or the ticked ones.
+const downloads = useTrackDownloads(() => list.reload())
+const pendingOnly = computed(() => list.query.downloaded === 'false')
+onMounted(() => {
+  if (kind === 'tracks') void downloads.followActive()
+})
 
 // Editable copy of the simple filters: applied on submit, not on every keystroke.
 const fieldKeys = spec.fields.map((f) => f.key)
@@ -223,6 +231,31 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
 
     <p v-if="tab === 'related'" class="library-list__intro">{{ t('library.related.intro') }}</p>
     <JobRunPanel v-if="kind === 'artists'" :job="importJob" />
+    <template v-if="kind === 'tracks'">
+      <div class="library-list__downloads">
+        <BaseButton
+          variant="secondary"
+          :aria-pressed="pendingOnly"
+          @click="list.update({ downloaded: pendingOnly ? '' : 'false' })"
+        >
+          {{ t('library.downloads.pendingOnly') }}
+        </BaseButton>
+        <BaseButton
+          variant="secondary"
+          :disabled="downloads.job.active"
+          @click="downloads.downloadAll()"
+        >
+          <AppIcon name="download" />{{ t('library.downloads.all') }}
+        </BaseButton>
+      </div>
+      <BaseAlert v-if="downloads.error.value" variant="error">
+        {{ downloads.error.value }}
+      </BaseAlert>
+      <BaseAlert v-if="downloads.job.active" variant="info">
+        {{ t('library.downloads.running') }}
+      </BaseAlert>
+      <JobRunPanel :job="downloads.job" />
+    </template>
     <BaseAlert v-if="list.error" variant="error">{{ list.error }}</BaseAlert>
     <p v-if="list.loading" role="status">{{ t('library.loading') }}</p>
     <template v-if="kind !== 'tracks'">
@@ -266,12 +299,23 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
         </RouterLink>
       </template>
       <template #cell-title="{ row }">
+        <input
+          v-if="!cell(row, 'downloaded')"
+          type="checkbox"
+          class="library-list__pick"
+          :aria-label="t('library.downloads.select', { title: label(row) })"
+          :checked="downloads.selected.has(row.id)"
+          @change="downloads.toggle(row.id, ($event.target as HTMLInputElement).checked)"
+        />
         <CoverArt class="library-list__thumb" :name="label(row)" :src="image(row)" />
         <RouterLink :to="{ name: 'library-item', params: { kind, id: row.id } }">
           {{ label(row) }}
         </RouterLink>
         <span v-if="cell(row, 'also_on')" class="chip library-list__also">
           {{ t('library.also_on', { n: cell(row, 'also_on') as number }) }}
+        </span>
+        <span v-if="!cell(row, 'downloaded') && cell(row, 'copyable')" class="chip chip--ok">
+          {{ t('library.downloads.copy') }}
         </span>
       </template>
       <template #cell-artists="{ row }">
@@ -286,10 +330,10 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
       <template #cell-preview="{ row }">
         <BaseButton
           variant="secondary"
-          :aria-label="`${t('download.preview')}: ${label(row)}`"
+          :aria-label="`${t('library.preview.open')}: ${label(row)}`"
           @click="showPreview({ id: row.id, title: label(row) })"
         >
-          <AppIcon name="play" />{{ t('download.preview') }}
+          <AppIcon name="play" />{{ t('library.preview.open') }}
         </BaseButton>
       </template>
       <template #cell-downloaded="{ row }">
@@ -300,6 +344,23 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
     </ResponsiveList>
 
     <VideoPreviewDialog :preview="preview" @close="closePreview" />
+
+    <!-- Sticky bar with the download of the selection: at hand while scrolling the list. -->
+    <div v-if="downloads.selected.size" class="action-bar">
+      <span>{{
+        t('library.downloads.selected', { count: downloads.selected.size }, downloads.selected.size)
+      }}</span>
+      <BaseButton variant="ghost" @click="downloads.selected.clear()">
+        {{ t('library.downloads.clear') }}
+      </BaseButton>
+      <BaseButton
+        variant="accent"
+        :disabled="downloads.job.active"
+        @click="downloads.downloadSelected()"
+      >
+        <AppIcon name="download" />{{ t('library.downloads.chosen') }}
+      </BaseButton>
+    </div>
 
     <BaseDialog
       :model-value="asking !== null"
@@ -421,6 +482,22 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
   font-size: 0.8125rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* Quick filter and "download all", to the right above the track list. */
+.library-list__downloads {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+.library-list__downloads .btn[aria-pressed='true'] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+.library-list__pick {
+  margin-right: var(--space-2);
+  vertical-align: middle;
 }
 /* Above the card's stretched link, so they can be clicked. */
 .covers .btn,

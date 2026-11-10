@@ -27,4 +27,9 @@ export default [
     name: 'library-item',
     component: LibraryItemView,
   },
+  // Downloading used to have its own screen; old links land on the pending tracks.
+  {
+    path: '/download',
+    redirect: { name: 'library', query: { tab: 'tracks', downloaded: 'false' } },
+  },
 ] satisfies RouteRecordRaw[]

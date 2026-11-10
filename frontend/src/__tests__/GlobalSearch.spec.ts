@@ -49,7 +49,7 @@ describe('GlobalSearch', () => {
   })
 
   it('with “All” it shows the groups with their counts, from any view', async () => {
-    const { w } = await mount('/download')
+    const { w } = await mount('/import')
     await type(w, 'disc')
     const groups = w.findAll('[role="group"]')
     expect(groups.map((g) => g.attributes('aria-label'))).toEqual(['Artists', 'Albums', 'Tracks'])
