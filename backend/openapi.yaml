@@ -1,0 +1,4312 @@
+openapi: 3.0.3
+info:
+  title: Vibratto Metadata API
+  version: 1.0.0
+paths:
+  /api/health/:
+    get:
+      operationId: health_retrieve
+      description: Report that the service is up. Used by the frontend and by deployments.
+      tags:
+      - core
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+          description: ''
+  /api/v1/accounts/language/:
+    put:
+      operationId: v1_accounts_language_update
+      description: Stores the interface language chosen in the web application.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LanguageRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LanguageRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LanguageRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Language'
+          description: ''
+  /api/v1/accounts/login/:
+    post:
+      operationId: v1_accounts_login_create
+      description: Signs in. django-axes locks out repeated failed attempts.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CredentialsRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CredentialsRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CredentialsRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Detail'
+          description: ''
+  /api/v1/accounts/logout/:
+    post:
+      operationId: v1_accounts_logout_create
+      tags:
+      - accounts
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/accounts/me/:
+    get:
+      operationId: v1_accounts_me_retrieve
+      description: The signed-in account and the failed attempts made during this
+        session.
+      tags:
+      - accounts
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+          description: ''
+  /api/v1/accounts/password/:
+    post:
+      operationId: v1_accounts_password_create
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/accounts/setup/:
+    get:
+      operationId: v1_accounts_setup_retrieve
+      description: Setup status. Also hands out the CSRF cookie the sign-in form needs.
+      tags:
+      - accounts
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetupStatus'
+          description: ''
+    post:
+      operationId: v1_accounts_setup_create
+      description: Create the account and sign it in.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewAccountRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NewAccountRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NewAccountRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Detail'
+          description: ''
+  /api/v1/accounts/username/:
+    post:
+      operationId: v1_accounts_username_create
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsernameChangeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UsernameChangeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UsernameChangeRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+  /api/v1/activity/entries/:
+    get:
+      operationId: v1_activity_entries_list
+      description: 'Activity history. Read only: nobody deletes or edits records.'
+      parameters:
+      - in: query
+        name: action
+        schema:
+          type: string
+      - in: query
+        name: date_from
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: date_to
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: object_id
+        schema:
+          type: string
+      - in: query
+        name: object_type
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: user
+        schema:
+          type: number
+      - in: query
+        name: username
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedActivityLogList'
+          description: ''
+  /api/v1/activity/entries/{id}/:
+    get:
+      operationId: v1_activity_entries_retrieve
+      description: 'Activity history. Read only: nobody deletes or edits records.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this activity log.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityLog'
+          description: ''
+  /api/v1/activity/logs/:
+    get:
+      operationId: v1_activity_logs_list
+      description: Technical logs stored in the database, administrators only.
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: date_to
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: min_level
+        schema:
+          type: integer
+      - in: query
+        name: module
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+      - in: query
+        name: task
+        schema: {}
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTechnicalLogList'
+          description: ''
+  /api/v1/activity/logs/{id}/:
+    get:
+      operationId: v1_activity_logs_retrieve
+      description: Technical logs stored in the database, administrators only.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Logging.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TechnicalLog'
+          description: ''
+  /api/v1/catalog/albums/:
+    get:
+      operationId: v1_catalog_albums_list
+      description: |-
+        Deletes albums and tracks, optionally blocking them with ``?block=true``.
+
+        Blocking keeps a later import from bringing the item back. The audio files are
+        removed from disk together with their ``Download`` rows, since a row without its file
+        would only mislead the maintenance checks. What was deleted stays in the activity
+        log. Deleting an album deletes its tracks.
+      parameters:
+      - in: query
+        name: artist
+        schema:
+          type: array
+          items:
+            type: number
+        description: Multiple values may be separated by commas.
+        explode: false
+        style: form
+      - in: query
+        name: download_status
+        schema:
+          type: string
+          enum:
+          - complete
+          - none
+          - partial
+        description: |-
+          * `complete` - complete
+          * `partial` - partial
+          * `none` - none
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: record_type
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: title__icontains
+        schema:
+          type: string
+      - in: query
+        name: year
+        schema:
+          type: integer
+      - in: query
+        name: year_from
+        schema:
+          type: integer
+      - in: query
+        name: year_to
+        schema:
+          type: integer
+      - in: query
+        name: ytmusic_id
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAlbumList'
+          description: ''
+  /api/v1/catalog/albums/{id}/:
+    get:
+      operationId: v1_catalog_albums_retrieve
+      description: |-
+        Deletes albums and tracks, optionally blocking them with ``?block=true``.
+
+        Blocking keeps a later import from bringing the item back. The audio files are
+        removed from disk together with their ``Download`` rows, since a row without its file
+        would only mislead the maintenance checks. What was deleted stays in the activity
+        log. Deleting an album deletes its tracks.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this album.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Album'
+          description: ''
+    put:
+      operationId: v1_catalog_albums_update
+      description: |-
+        Deletes albums and tracks, optionally blocking them with ``?block=true``.
+
+        Blocking keeps a later import from bringing the item back. The audio files are
+        removed from disk together with their ``Download`` rows, since a row without its file
+        would only mislead the maintenance checks. What was deleted stays in the activity
+        log. Deleting an album deletes its tracks.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this album.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlbumRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AlbumRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AlbumRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Album'
+          description: ''
+    patch:
+      operationId: v1_catalog_albums_partial_update
+      description: |-
+        Deletes albums and tracks, optionally blocking them with ``?block=true``.
+
+        Blocking keeps a later import from bringing the item back. The audio files are
+        removed from disk together with their ``Download`` rows, since a row without its file
+        would only mislead the maintenance checks. What was deleted stays in the activity
+        log. Deleting an album deletes its tracks.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this album.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAlbumRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAlbumRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAlbumRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Album'
+          description: ''
+    delete:
+      operationId: v1_catalog_albums_destroy
+      description: |-
+        Deletes albums and tracks, optionally blocking them with ``?block=true``.
+
+        Blocking keeps a later import from bringing the item back. The audio files are
+        removed from disk together with their ``Download`` rows, since a row without its file
+        would only mislead the maintenance checks. What was deleted stays in the activity
+        log. Deleting an album deletes its tracks.
+      parameters:
+      - in: query
+        name: block
+        schema:
+          type: boolean
+        description: Also block the item.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this album.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/catalog/albums/{id}/artists/:
+    put:
+      operationId: v1_catalog_albums_artists_update
+      description: Replace the artists, in the order received.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this album.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArtistIdsRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ArtistIdsRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ArtistIdsRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Album'
+          description: ''
+  /api/v1/catalog/albums/{id}/history/:
+    get:
+      operationId: v1_catalog_albums_history_list
+      description: Versions of the item, newest first.
+      parameters:
+      - in: query
+        name: artist
+        schema:
+          type: array
+          items:
+            type: number
+        description: Multiple values may be separated by commas.
+        explode: false
+        style: form
+      - in: query
+        name: download_status
+        schema:
+          type: string
+          enum:
+          - complete
+          - none
+          - partial
+        description: |-
+          * `complete` - complete
+          * `partial` - partial
+          * `none` - none
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this album.
+        required: true
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: record_type
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: title__icontains
+        schema:
+          type: string
+      - in: query
+        name: year
+        schema:
+          type: integer
+      - in: query
+        name: year_from
+        schema:
+          type: integer
+      - in: query
+        name: year_to
+        schema:
+          type: integer
+      - in: query
+        name: ytmusic_id
+        schema:
+          type: string
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHistoryEntryList'
+          description: ''
+  /api/v1/catalog/albums/{id}/revert/:
+    post:
+      operationId: v1_catalog_albums_revert_create
+      description: Set the editable fields back to the values of a past version.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this album.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevertRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RevertRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RevertRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Album'
+          description: ''
+  /api/v1/catalog/artists/:
+    get:
+      operationId: v1_catalog_artists_list
+      description: List, detail, edit, history and revert, shared by artists, albums
+        and tracks.
+      parameters:
+      - in: query
+        name: has_downloads
+        schema:
+          type: boolean
+      - in: query
+        name: has_pending
+        schema:
+          type: boolean
+      - in: query
+        name: name__icontains
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: profile_only
+        schema:
+          type: boolean
+      - in: query
+        name: related_to
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: watched
+        schema:
+          type: boolean
+      - in: query
+        name: ytmusic_id
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedArtistList'
+          description: ''
+  /api/v1/catalog/artists/{id}/:
+    get:
+      operationId: v1_catalog_artists_retrieve
+      description: List, detail, edit, history and revert, shared by artists, albums
+        and tracks.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this artist.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Artist'
+          description: ''
+    put:
+      operationId: v1_catalog_artists_update
+      description: List, detail, edit, history and revert, shared by artists, albums
+        and tracks.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this artist.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArtistRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ArtistRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ArtistRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Artist'
+          description: ''
+    patch:
+      operationId: v1_catalog_artists_partial_update
+      description: List, detail, edit, history and revert, shared by artists, albums
+        and tracks.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this artist.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedArtistRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedArtistRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedArtistRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Artist'
+          description: ''
+  /api/v1/catalog/artists/{id}/history/:
+    get:
+      operationId: v1_catalog_artists_history_list
+      description: Versions of the item, newest first.
+      parameters:
+      - in: query
+        name: has_downloads
+        schema:
+          type: boolean
+      - in: query
+        name: has_pending
+        schema:
+          type: boolean
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this artist.
+        required: true
+      - in: query
+        name: name__icontains
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: profile_only
+        schema:
+          type: boolean
+      - in: query
+        name: related_to
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: watched
+        schema:
+          type: boolean
+      - in: query
+        name: ytmusic_id
+        schema:
+          type: string
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHistoryEntryList'
+          description: ''
+  /api/v1/catalog/artists/{id}/revert/:
+    post:
+      operationId: v1_catalog_artists_revert_create
+      description: Set the editable fields back to the values of a past version.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this artist.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevertRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RevertRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RevertRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Artist'
+          description: ''
+  /api/v1/catalog/backup/:
+    get:
+      operationId: v1_catalog_backup_retrieve
+      description: Downloads the whole library as a JSON file.
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+          description: Backup file.
+  /api/v1/catalog/backup/preview/:
+    post:
+      operationId: v1_catalog_backup_preview_create
+      description: Counts what a backup holds and what already exists. Changes nothing.
+      tags:
+      - catalog
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BackupUploadRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BackupPreview'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Detail'
+          description: Invalid file.
+  /api/v1/catalog/backup/restore/:
+    post:
+      operationId: v1_catalog_backup_restore_create
+      description: |-
+        Validates a backup and starts the ``library_restore`` job.
+
+        The job adds what is missing and never rewrites rows that exist.
+      tags:
+      - catalog
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BackupUploadRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobRun'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Detail'
+          description: Invalid file.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Detail'
+          description: Another restore is running.
+  /api/v1/catalog/blocked/:
+    get:
+      operationId: v1_catalog_blocked_list
+      description: 'The block list: blocking creates an entry, unblocking deletes
+        it.'
+      parameters:
+      - in: query
+        name: external_id
+        schema:
+          type: string
+      - in: query
+        name: kind
+        schema:
+          type: string
+          enum:
+          - album
+          - artist
+          - track
+        description: |-
+          * `artist` - Artist
+          * `album` - Album
+          * `track` - Track
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBlockedItemList'
+          description: ''
+    post:
+      operationId: v1_catalog_blocked_create
+      description: 'The block list: blocking creates an entry, unblocking deletes
+        it.'
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlockedItemRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BlockedItemRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BlockedItemRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlockedItem'
+          description: ''
+  /api/v1/catalog/blocked/{id}/:
+    delete:
+      operationId: v1_catalog_blocked_destroy
+      description: 'The block list: blocking creates an entry, unblocking deletes
+        it.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this blocked item.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/catalog/recordings/:
+    get:
+      operationId: v1_catalog_recordings_list
+      description: Recordings with the albums they appear on. Read-only, except for
+        merging.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRecordingList'
+          description: ''
+  /api/v1/catalog/recordings/{id}/:
+    get:
+      operationId: v1_catalog_recordings_retrieve
+      description: Recordings with the albums they appear on. Read-only, except for
+        merging.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this recording.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recording'
+          description: ''
+  /api/v1/catalog/recordings/{id}/merge/:
+    post:
+      operationId: v1_catalog_recordings_merge_create
+      description: Absorb another recording into this one.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this recording.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordingMergeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecordingMergeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecordingMergeRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recording'
+          description: ''
+  /api/v1/catalog/search/:
+    get:
+      operationId: v1_catalog_search_retrieve
+      description: Grouped results with totals.
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          minimum: 1
+          default: 5
+      - in: query
+        name: q
+        schema:
+          type: string
+          minLength: 2
+        required: true
+      - in: query
+        name: type
+        schema:
+          enum:
+          - all
+          - artists
+          - albums
+          - tracks
+          type: string
+          default: all
+          minLength: 1
+        description: |-
+          * `all` - all
+          * `artists` - artists
+          * `albums` - albums
+          * `tracks` - tracks
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Search'
+          description: ''
+  /api/v1/catalog/summary/:
+    get:
+      operationId: v1_catalog_summary_retrieve
+      description: Counts shown on the dashboard.
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibrarySummary'
+          description: ''
+  /api/v1/catalog/tracks/:
+    get:
+      operationId: v1_catalog_tracks_list
+      description: |-
+        Deletes albums and tracks, optionally blocking them with ``?block=true``.
+
+        Blocking keeps a later import from bringing the item back. The audio files are
+        removed from disk together with their ``Download`` rows, since a row without its file
+        would only mislead the maintenance checks. What was deleted stays in the activity
+        log. Deleting an album deletes its tracks.
+      parameters:
+      - in: query
+        name: album
+        schema:
+          type: array
+          items:
+            type: number
+        description: Multiple values may be separated by commas.
+        explode: false
+        style: form
+      - in: query
+        name: artist
+        schema:
+          type: array
+          items:
+            type: number
+        description: Multiple values may be separated by commas.
+        explode: false
+        style: form
+      - in: query
+        name: downloaded
+        schema:
+          type: boolean
+      - in: query
+        name: duration_max
+        schema:
+          type: integer
+      - in: query
+        name: duration_min
+        schema:
+          type: integer
+      - in: query
+        name: explicit
+        schema:
+          type: boolean
+      - in: query
+        name: has_video
+        schema:
+          type: boolean
+      - in: query
+        name: one_per_recording
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: record_type
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: title__icontains
+        schema:
+          type: string
+      - in: query
+        name: video_id
+        schema:
+          type: string
+      - in: query
+        name: year
+        schema:
+          type: integer
+      - in: query
+        name: year_from
+        schema:
+          type: integer
+      - in: query
+        name: year_to
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTrackList'
+          description: ''
+  /api/v1/catalog/tracks/{id}/:
+    get:
+      operationId: v1_catalog_tracks_retrieve
+      description: |-
+        Deletes albums and tracks, optionally blocking them with ``?block=true``.
+
+        Blocking keeps a later import from bringing the item back. The audio files are
+        removed from disk together with their ``Download`` rows, since a row without its file
+        would only mislead the maintenance checks. What was deleted stays in the activity
+        log. Deleting an album deletes its tracks.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this track.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Track'
+          description: ''
+    put:
+      operationId: v1_catalog_tracks_update
+      description: |-
+        Deletes albums and tracks, optionally blocking them with ``?block=true``.
+
+        Blocking keeps a later import from bringing the item back. The audio files are
+        removed from disk together with their ``Download`` rows, since a row without its file
+        would only mislead the maintenance checks. What was deleted stays in the activity
+        log. Deleting an album deletes its tracks.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this track.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrackRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TrackRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TrackRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Track'
+          description: ''
+    patch:
+      operationId: v1_catalog_tracks_partial_update
+      description: |-
+        Deletes albums and tracks, optionally blocking them with ``?block=true``.
+
+        Blocking keeps a later import from bringing the item back. The audio files are
+        removed from disk together with their ``Download`` rows, since a row without its file
+        would only mislead the maintenance checks. What was deleted stays in the activity
+        log. Deleting an album deletes its tracks.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this track.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTrackRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTrackRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTrackRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Track'
+          description: ''
+    delete:
+      operationId: v1_catalog_tracks_destroy
+      description: |-
+        Deletes albums and tracks, optionally blocking them with ``?block=true``.
+
+        Blocking keeps a later import from bringing the item back. The audio files are
+        removed from disk together with their ``Download`` rows, since a row without its file
+        would only mislead the maintenance checks. What was deleted stays in the activity
+        log. Deleting an album deletes its tracks.
+      parameters:
+      - in: query
+        name: block
+        schema:
+          type: boolean
+        description: Also block the item.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this track.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/catalog/tracks/{id}/artists/:
+    put:
+      operationId: v1_catalog_tracks_artists_update
+      description: Replace the artists, in the order received.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this track.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArtistIdsRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ArtistIdsRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ArtistIdsRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Track'
+          description: ''
+  /api/v1/catalog/tracks/{id}/history/:
+    get:
+      operationId: v1_catalog_tracks_history_list
+      description: Versions of the item, newest first.
+      parameters:
+      - in: query
+        name: album
+        schema:
+          type: array
+          items:
+            type: number
+        description: Multiple values may be separated by commas.
+        explode: false
+        style: form
+      - in: query
+        name: artist
+        schema:
+          type: array
+          items:
+            type: number
+        description: Multiple values may be separated by commas.
+        explode: false
+        style: form
+      - in: query
+        name: downloaded
+        schema:
+          type: boolean
+      - in: query
+        name: duration_max
+        schema:
+          type: integer
+      - in: query
+        name: duration_min
+        schema:
+          type: integer
+      - in: query
+        name: explicit
+        schema:
+          type: boolean
+      - in: query
+        name: has_video
+        schema:
+          type: boolean
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this track.
+        required: true
+      - in: query
+        name: one_per_recording
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: record_type
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: title__icontains
+        schema:
+          type: string
+      - in: query
+        name: video_id
+        schema:
+          type: string
+      - in: query
+        name: year
+        schema:
+          type: integer
+      - in: query
+        name: year_from
+        schema:
+          type: integer
+      - in: query
+        name: year_to
+        schema:
+          type: integer
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHistoryEntryList'
+          description: ''
+  /api/v1/catalog/tracks/{id}/revert/:
+    post:
+      operationId: v1_catalog_tracks_revert_create
+      description: Set the editable fields back to the values of a past version.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this track.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevertRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RevertRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RevertRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Track'
+          description: ''
+  /api/v1/catalog/tracks/{id}/split/:
+    post:
+      operationId: v1_catalog_tracks_split_create
+      description: Give the track a recording of its own.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this track.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Track'
+          description: ''
+  /api/v1/catalog/tracks/{id}/upload/:
+    post:
+      operationId: v1_catalog_tracks_upload_create
+      description: Validates the file (type and size), converts it to the configured
+        format, tags it from the catalogue, files it with the naming template and
+        records a download with no source URL.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TrackUploadRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Track'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Detail'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Detail'
+          description: ''
+        '413':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Detail'
+          description: ''
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Detail'
+          description: ''
+  /api/v1/catalog/tracks/{id}/video/:
+    get:
+      operationId: v1_catalog_tracks_video_retrieve
+      description: |-
+        Returns the video a download would use.
+
+        Tracks imported from YouTube Music answer at once with their own video. The rest are
+        searched for, with the same rule the download applies.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Video'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Detail'
+          description: ''
+        '502':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Detail'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Detail'
+          description: ''
+  /api/v1/catalog/ytmusic/artists/:
+    get:
+      operationId: v1_catalog_ytmusic_artists_retrieve
+      description: |-
+        Finds artists on YouTube Music so they can be imported.
+
+        A link or channel id returns that one artist with the size of its discography; any
+        other text is searched as a name.
+      parameters:
+      - in: query
+        name: q
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 300
+        description: Artist name, channel id or YouTube Music artist link.
+        required: true
+      tags:
+      - catalog
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtistLookup'
+          description: ''
+        '502':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Detail'
+          description: ''
+  /api/v1/jobs/runs/:
+    get:
+      operationId: v1_jobs_runs_list
+      description: |-
+        Starts, inspects and stops background tasks. Runs are never edited or
+        deleted through the API: the engine owns them.
+      parameters:
+      - in: query
+        name: kind
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: started_after
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: started_before
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - failed
+          - interrupted
+          - pending
+          - running
+          - stopped
+          - stopping
+          - succeeded
+        description: |-
+          * `pending` - pending
+          * `running` - running
+          * `stopping` - stopping
+          * `stopped` - stopped
+          * `succeeded` - succeeded
+          * `failed` - failed
+          * `interrupted` - interrupted
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedJobRunList'
+          description: ''
+    post:
+      operationId: v1_jobs_runs_create
+      description: Starts a task; 409 if one of the same kind is already active.
+      tags:
+      - jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobStartRequest'
+            examples:
+              Import:
+                value:
+                  kind: import
+                  params:
+                    artist_ids:
+                    - UCmMUZbaYdNH0bEd1PAlAqsA
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/JobStartRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/JobStartRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobRun'
+              examples:
+                Import:
+                  value:
+                    kind: import
+                    params:
+                      artist_ids:
+                      - UCmMUZbaYdNH0bEd1PAlAqsA
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Detail'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Detail'
+          description: ''
+  /api/v1/jobs/runs/{id}/:
+    get:
+      operationId: v1_jobs_runs_retrieve
+      description: |-
+        Starts, inspects and stops background tasks. Runs are never edited or
+        deleted through the API: the engine owns them.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this job run.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobRun'
+          description: ''
+  /api/v1/jobs/runs/{id}/lines/:
+    get:
+      operationId: v1_jobs_runs_lines_list
+      description: 'Log lines after position ``after`` (default: from the start).'
+      parameters:
+      - in: query
+        name: after
+        schema:
+          type: integer
+        description: Last position already received.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this job run.
+        required: true
+      - in: query
+        name: kind
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: started_after
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: started_before
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - failed
+          - interrupted
+          - pending
+          - running
+          - stopped
+          - stopping
+          - succeeded
+        description: |-
+          * `pending` - pending
+          * `running` - running
+          * `stopping` - stopping
+          * `stopped` - stopped
+          * `succeeded` - succeeded
+          * `failed` - failed
+          * `interrupted` - interrupted
+      tags:
+      - jobs
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedJobRunLineList'
+          description: ''
+  /api/v1/jobs/runs/{id}/stop/:
+    post:
+      operationId: v1_jobs_runs_stop_create
+      description: Asks to stop; 409 if already closed.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this job run.
+        required: true
+      tags:
+      - jobs
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobRun'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Detail'
+          description: ''
+  /api/v1/preferences/:
+    get:
+      operationId: v1_preferences_list
+      description: Lists every setting with its value and its default.
+      tags:
+      - preferences
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Preference'
+          description: ''
+  /api/v1/preferences/{key}/:
+    get:
+      operationId: v1_preferences_retrieve
+      description: Returns one setting.
+      parameters:
+      - in: path
+        name: key
+        schema:
+          type: string
+        required: true
+      tags:
+      - preferences
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preference'
+          description: ''
+    put:
+      operationId: v1_preferences_update
+      description: Changes a setting and logs it.
+      parameters:
+      - in: path
+        name: key
+        schema:
+          type: string
+        required: true
+      tags:
+      - preferences
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreferenceWriteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PreferenceWriteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PreferenceWriteRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preference'
+          description: ''
+  /api/v1/proxies/:
+    get:
+      operationId: v1_proxies_list
+      description: Proxy CRUD and connection test.
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Proxy'
+          description: ''
+    post:
+      operationId: v1_proxies_create
+      description: Proxy CRUD and connection test.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProxyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProxyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProxyRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Proxy'
+          description: ''
+  /api/v1/proxies/{id}/:
+    get:
+      operationId: v1_proxies_retrieve
+      description: Proxy CRUD and connection test.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this proxy.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Proxy'
+          description: ''
+    put:
+      operationId: v1_proxies_update
+      description: Proxy CRUD and connection test.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this proxy.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProxyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProxyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProxyRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Proxy'
+          description: ''
+    patch:
+      operationId: v1_proxies_partial_update
+      description: Proxy CRUD and connection test.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this proxy.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProxyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProxyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProxyRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Proxy'
+          description: ''
+    delete:
+      operationId: v1_proxies_destroy
+      description: Proxy CRUD and connection test.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this proxy.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/proxies/{id}/check/:
+    post:
+      operationId: v1_proxies_check_create
+      description: |-
+        Checks that the proxy relays traffic.
+
+        A 2xx or 3xx status counts as success.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this proxy.
+        required: true
+      tags:
+      - proxies
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProxyCheck'
+          description: ''
+  /api/v1/proxies/bulk/:
+    post:
+      operationId: v1_proxies_bulk_create
+      description: |-
+        Adds the valid proxies of a pasted list.
+
+        With no valid line it answers 400 and creates nothing. Duplicates, against the
+        database or inside the list, are counted and not created.
+      tags:
+      - proxies
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkProxyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BulkProxyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BulkProxyRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkProxyResult'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkProxyResult'
+          description: ''
+  /api/v1/watches/:
+    get:
+      operationId: v1_watches_list
+      description: Watch CRUD and check history.
+      parameters:
+      - in: query
+        name: artist
+        schema:
+          type: array
+          items:
+            type: number
+        description: Multiple values may be separated by commas.
+        explode: false
+        style: form
+      - in: query
+        name: auto_download
+        schema:
+          type: boolean
+      - in: query
+        name: enabled
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWatchList'
+          description: ''
+    post:
+      operationId: v1_watches_create
+      description: Watch CRUD and check history.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WatchRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WatchRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WatchRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Watch'
+          description: ''
+  /api/v1/watches/{id}/:
+    get:
+      operationId: v1_watches_retrieve
+      description: Watch CRUD and check history.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this watch.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Watch'
+          description: ''
+    put:
+      operationId: v1_watches_update
+      description: Watch CRUD and check history.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this watch.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WatchRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WatchRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WatchRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Watch'
+          description: ''
+    patch:
+      operationId: v1_watches_partial_update
+      description: Watch CRUD and check history.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this watch.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedWatchRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedWatchRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedWatchRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Watch'
+          description: ''
+    delete:
+      operationId: v1_watches_destroy
+      description: Watch CRUD and check history.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this watch.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/watches/{id}/runs/:
+    get:
+      operationId: v1_watches_runs_list
+      description: Check history, newest first.
+      parameters:
+      - in: query
+        name: artist
+        schema:
+          type: array
+          items:
+            type: number
+        description: Multiple values may be separated by commas.
+        explode: false
+        style: form
+      - in: query
+        name: auto_download
+        schema:
+          type: boolean
+      - in: query
+        name: enabled
+        schema:
+          type: boolean
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this watch.
+        required: true
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - watches
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWatchRunList'
+          description: ''
+components:
+  schemas:
+    ActivityLog:
+      type: object
+      description: One activity history entry.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+          nullable: true
+        username:
+          type: string
+          readOnly: true
+        action:
+          type: string
+          readOnly: true
+        object_type:
+          type: string
+          description: Returns ``app.model`` of the target.
+          readOnly: true
+        object_id:
+          type: string
+          readOnly: true
+        detail:
+          readOnly: true
+      required:
+      - action
+      - created_at
+      - detail
+      - id
+      - object_id
+      - object_type
+      - user
+      - username
+    Album:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        year:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        cover_url:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        record_type:
+          allOf:
+          - $ref: '#/components/schemas/RecordTypeEnum'
+          readOnly: true
+        artists:
+          type: array
+          items:
+            $ref: '#/components/schemas/Credit'
+          readOnly: true
+        ytmusic_id:
+          type: string
+          readOnly: true
+          nullable: true
+          description: Browse id.
+        track_count:
+          type: integer
+          readOnly: true
+          default: 0
+        pending_count:
+          type: integer
+          readOnly: true
+          default: 0
+      required:
+      - artists
+      - id
+      - pending_count
+      - record_type
+      - title
+      - track_count
+      - ytmusic_id
+    AlbumRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        year:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        cover_url:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+      required:
+      - title
+    Artist:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        image_url:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        description:
+          type: string
+        ytmusic_id:
+          type: string
+          readOnly: true
+          nullable: true
+          description: Channel id.
+        monthly_listeners:
+          type: integer
+          readOnly: true
+          nullable: true
+        subscribers:
+          type: integer
+          readOnly: true
+          nullable: true
+        album_count:
+          type: integer
+          readOnly: true
+          default: 0
+        track_count:
+          type: integer
+          readOnly: true
+          default: 0
+        pending_count:
+          type: integer
+          readOnly: true
+          default: 0
+        suggest_import:
+          type: boolean
+          readOnly: true
+          description: A profile without music whose audience reaches the suggestion
+            threshold.
+      required:
+      - album_count
+      - id
+      - monthly_listeners
+      - name
+      - pending_count
+      - subscribers
+      - suggest_import
+      - track_count
+      - ytmusic_id
+    ArtistIdsRequest:
+      type: object
+      description: Ordered list of artists; the first one is the main artist.
+      properties:
+        artists:
+          type: array
+          items:
+            type: integer
+      required:
+      - artists
+    ArtistLookup:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArtistLookupResult'
+      required:
+      - results
+    ArtistLookupResult:
+      type: object
+      description: An artist found on YouTube Music.
+      properties:
+        ytmusic_id:
+          type: string
+        name:
+          type: string
+        image_url:
+          type: string
+          nullable: true
+        monthly_listeners:
+          type: integer
+          nullable: true
+        subscribers:
+          type: integer
+          nullable: true
+        album_count:
+          type: integer
+          nullable: true
+          description: Only known when looking up a link or channel id.
+        single_count:
+          type: integer
+          nullable: true
+        in_library:
+          type: boolean
+          description: Already has music in the library.
+        blocked:
+          type: boolean
+      required:
+      - album_count
+      - blocked
+      - image_url
+      - in_library
+      - monthly_listeners
+      - name
+      - single_count
+      - subscribers
+      - ytmusic_id
+    ArtistRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        image_url:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        description:
+          type: string
+      required:
+      - name
+    BackupCount:
+      type: object
+      properties:
+        total:
+          type: integer
+        existing:
+          type: integer
+          description: Already in the library.
+      required:
+      - existing
+      - total
+    BackupPreview:
+      type: object
+      properties:
+        artists:
+          $ref: '#/components/schemas/BackupCount'
+        albums:
+          $ref: '#/components/schemas/BackupCount'
+        tracks:
+          $ref: '#/components/schemas/BackupCount'
+        downloads:
+          $ref: '#/components/schemas/BackupCount'
+      required:
+      - albums
+      - artists
+      - downloads
+      - tracks
+    BackupUploadRequest:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+          description: An exported JSON backup.
+      required:
+      - file
+    BlockedItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        kind:
+          $ref: '#/components/schemas/KindEnum'
+        external_id:
+          type: string
+          description: Channel id, browse id or video id, depending on the kind.
+          maxLength: 64
+        name:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - external_id
+      - id
+      - kind
+    BlockedItemRequest:
+      type: object
+      properties:
+        kind:
+          $ref: '#/components/schemas/KindEnum'
+        external_id:
+          type: string
+          minLength: 1
+          description: Channel id, browse id or video id, depending on the kind.
+          maxLength: 64
+        name:
+          type: string
+          maxLength: 255
+      required:
+      - external_id
+      - kind
+    BulkProxyRequest:
+      type: object
+      description: Pasted proxy list for bulk import.
+      properties:
+        text:
+          type: string
+        ip_version:
+          allOf:
+          - $ref: '#/components/schemas/IpVersionEnum'
+          default: ipv4
+        enabled:
+          type: boolean
+          default: true
+        default_scheme:
+          allOf:
+          - $ref: '#/components/schemas/DefaultSchemeEnum'
+          default: http
+      required:
+      - text
+    BulkProxyResult:
+      type: object
+      description: Summary of a bulk import.
+      properties:
+        created:
+          type: integer
+        duplicates:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+        invalid:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+      required:
+      - created
+      - duplicates
+      - invalid
+    CredentialsRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - password
+      - username
+    Credit:
+      type: object
+      description: One credited artist, in credit order.
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        position:
+          type: integer
+      required:
+      - id
+      - name
+      - position
+    CreditRequest:
+      type: object
+      description: One credited artist, in credit order.
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          minLength: 1
+        position:
+          type: integer
+      required:
+      - id
+      - name
+      - position
+    DefaultSchemeEnum:
+      enum:
+      - http
+      - https
+      - socks5
+      - socks5h
+      type: string
+      description: |-
+        * `http` - http
+        * `https` - https
+        * `socks5` - socks5
+        * `socks5h` - socks5h
+    Detail:
+      type: object
+      description: An error body with a readable message.
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    Health:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string
+      required:
+      - message
+      - status
+    HistoryEntry:
+      type: object
+      description: A past version of an item.
+      properties:
+        history_id:
+          type: integer
+        history_date:
+          type: string
+          format: date-time
+        history_type:
+          type: string
+          description: + created, ~ changed, - deleted.
+        history_user:
+          type: string
+          nullable: true
+        changes:
+          type: object
+          additionalProperties: {}
+          description: Values of the editable fields.
+      required:
+      - changes
+      - history_date
+      - history_id
+      - history_type
+      - history_user
+    IpVersionEnum:
+      enum:
+      - ipv4
+      - ipv6
+      type: string
+      description: |-
+        * `ipv4` - IPv4
+        * `ipv6` - IPv6
+    JobRun:
+      type: object
+      description: State and progress of a run, read only.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        kind:
+          type: string
+          readOnly: true
+        params:
+          readOnly: true
+          title: Parameters
+        user:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/JobRunStatusEnum'
+          readOnly: true
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Started
+        finished_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          title: Finished
+        done:
+          type: integer
+          readOnly: true
+        total:
+          type: integer
+          readOnly: true
+        current:
+          type: string
+          readOnly: true
+          title: Current item
+        summary:
+          readOnly: true
+      required:
+      - current
+      - done
+      - finished_at
+      - id
+      - kind
+      - params
+      - started_at
+      - status
+      - summary
+      - total
+      - user
+    JobRunLine:
+      type: object
+      description: One log line of a run.
+      properties:
+        position:
+          type: integer
+          readOnly: true
+        level:
+          allOf:
+          - $ref: '#/components/schemas/JobRunLineLevelEnum'
+          readOnly: true
+        message:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Date
+      required:
+      - created_at
+      - level
+      - message
+      - position
+    JobRunLineLevelEnum:
+      enum:
+      - info
+      - warning
+      - error
+      type: string
+      description: |-
+        * `info` - information
+        * `warning` - warning
+        * `error` - error
+    JobRunStatusEnum:
+      enum:
+      - pending
+      - running
+      - stopping
+      - stopped
+      - succeeded
+      - failed
+      - interrupted
+      type: string
+      description: |-
+        * `pending` - pending
+        * `running` - running
+        * `stopping` - stopping
+        * `stopped` - stopped
+        * `succeeded` - succeeded
+        * `failed` - failed
+        * `interrupted` - interrupted
+    JobStartRequest:
+      type: object
+      description: Request to start a task.
+      properties:
+        kind:
+          type: string
+          minLength: 1
+          description: Tipo registrado. / Registered kind.
+        params:
+          type: object
+          additionalProperties: {}
+          description: JSON parameters.
+      required:
+      - kind
+    KindEnum:
+      enum:
+      - artist
+      - album
+      - track
+      type: string
+      description: |-
+        * `artist` - Artist
+        * `album` - Album
+        * `track` - Track
+    Language:
+      type: object
+      properties:
+        language:
+          $ref: '#/components/schemas/LanguageEnum'
+      required:
+      - language
+    LanguageEnum:
+      enum:
+      - en
+      - es
+      type: string
+      description: |-
+        * `en` - English
+        * `es` - Español
+    LanguageRequest:
+      type: object
+      properties:
+        language:
+          $ref: '#/components/schemas/LanguageEnum'
+      required:
+      - language
+    LibrarySummary:
+      type: object
+      properties:
+        artists:
+          type: integer
+          description: Artists with music.
+        related_artists:
+          type: integer
+          description: Profiles saved without music.
+        albums:
+          type: integer
+        recordings:
+          type: integer
+        tracks:
+          type: integer
+        downloaded:
+          type: integer
+          description: Tracks with at least one download.
+      required:
+      - albums
+      - artists
+      - downloaded
+      - recordings
+      - related_artists
+      - tracks
+    Me:
+      type: object
+      properties:
+        username:
+          type: string
+        language:
+          type: string
+        failed_attempts:
+          type: integer
+          description: Failed sign-in attempts since the last successful one.
+      required:
+      - failed_attempts
+      - language
+      - username
+    NewAccountRequest:
+      type: object
+      description: Creation of the account, validated with Django's own username and
+        password rules.
+      properties:
+        username:
+          type: string
+          minLength: 1
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        code:
+          type: string
+          writeOnly: true
+          description: Setup code, when the server requires one.
+      required:
+      - password
+      - username
+    PaginatedActivityLogList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityLog'
+    PaginatedAlbumList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Album'
+    PaginatedArtistList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Artist'
+    PaginatedBlockedItemList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlockedItem'
+    PaginatedHistoryEntryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoryEntry'
+    PaginatedJobRunLineList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobRunLine'
+    PaginatedJobRunList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobRun'
+    PaginatedRecordingList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Recording'
+    PaginatedTechnicalLogList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TechnicalLog'
+    PaginatedTrackList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Track'
+    PaginatedWatchList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Watch'
+    PaginatedWatchRunList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/WatchRun'
+    PasswordChangeRequest:
+      type: object
+      description: Asks for the current password, so a hijacked session cannot change
+        credentials.
+      properties:
+        current_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - current_password
+      - new_password
+    PatchedAlbumRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        year:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        cover_url:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+    PatchedArtistRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        image_url:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        description:
+          type: string
+    PatchedProxyRequest:
+      type: object
+      description: Outbound proxy. The counters are maintained by downloads, not by
+        the API.
+      properties:
+        url:
+          type: string
+          minLength: 1
+          maxLength: 500
+        ip_version:
+          $ref: '#/components/schemas/IpVersionEnum'
+        enabled:
+          type: boolean
+    PatchedTrackRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        track_number:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          default: 1
+        disc_number:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          default: 1
+    PatchedWatchRequest:
+      type: object
+      description: |-
+        New-release watch with ordered artists.
+
+        Artists are read from ``artists`` and written as an ordered id list in ``artist_ids``;
+        leaving ``artist_ids`` out keeps them unchanged.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        enabled:
+          type: boolean
+        interval_hours:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+          title: Interval (hours)
+        auto_download:
+          type: boolean
+          title: Automatic download
+        artist_ids:
+          type: array
+          items:
+            type: integer
+          writeOnly: true
+    Preference:
+      type: object
+      description: A setting with its effective and default values.
+      properties:
+        key:
+          type: string
+          readOnly: true
+        value:
+          readOnly: true
+        default:
+          readOnly: true
+      required:
+      - default
+      - key
+      - value
+    PreferenceWriteRequest:
+      type: object
+      description: |-
+        New value for a setting.
+
+        Only the type of the default is accepted, so a setting never changes shape and the
+        code reading it needs no defensive parsing.
+      properties:
+        value: {}
+      required:
+      - value
+    Profile:
+      type: object
+      properties:
+        username:
+          type: string
+        language:
+          type: string
+      required:
+      - language
+      - username
+    Proxy:
+      type: object
+      description: Outbound proxy. The counters are maintained by downloads, not by
+        the API.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        url:
+          type: string
+          maxLength: 500
+        ip_version:
+          $ref: '#/components/schemas/IpVersionEnum'
+        enabled:
+          type: boolean
+        success_count:
+          type: integer
+          readOnly: true
+          title: Successes
+        failure_count:
+          type: integer
+          readOnly: true
+          title: Failures
+        last_used_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          title: Last used
+        last_failed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          title: Last failure
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Created
+      required:
+      - created_at
+      - failure_count
+      - id
+      - last_failed_at
+      - last_used_at
+      - success_count
+      - url
+    ProxyCheck:
+      type: object
+      description: Result of testing a proxy.
+      properties:
+        ok:
+          type: boolean
+        status_code:
+          type: integer
+          nullable: true
+      required:
+      - ok
+      - status_code
+    ProxyRequest:
+      type: object
+      description: Outbound proxy. The counters are maintained by downloads, not by
+        the API.
+      properties:
+        url:
+          type: string
+          minLength: 1
+          maxLength: 500
+        ip_version:
+          $ref: '#/components/schemas/IpVersionEnum'
+        enabled:
+          type: boolean
+      required:
+      - url
+    RecordTypeEnum:
+      enum:
+      - album
+      - single
+      - ep
+      type: string
+      description: |-
+        * `album` - Album
+        * `single` - Single
+        * `ep` - EP
+    Recording:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+        duration:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Seconds.
+        explicit:
+          type: boolean
+          readOnly: true
+        video_id:
+          type: string
+          readOnly: true
+          nullable: true
+        artists:
+          type: array
+          items:
+            $ref: '#/components/schemas/Credit'
+          readOnly: true
+        track_count:
+          type: integer
+          readOnly: true
+        downloaded:
+          type: boolean
+          readOnly: true
+        tracks:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecordingTrack'
+          readOnly: true
+      required:
+      - artists
+      - downloaded
+      - duration
+      - explicit
+      - id
+      - title
+      - track_count
+      - tracks
+      - video_id
+    RecordingMergeRequest:
+      type: object
+      properties:
+        recording:
+          type: integer
+          description: Id of the recording to absorb.
+      required:
+      - recording
+    RecordingTrack:
+      type: object
+      description: One appearance of a recording on an album.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        album:
+          type: integer
+          readOnly: true
+        album_title:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+        disc_number:
+          type: integer
+          readOnly: true
+          default: 1
+        track_number:
+          type: integer
+          readOnly: true
+          default: 1
+        downloaded:
+          type: boolean
+          readOnly: true
+      required:
+      - album
+      - album_title
+      - disc_number
+      - downloaded
+      - id
+      - title
+      - track_number
+    RevertRequest:
+      type: object
+      properties:
+        history_id:
+          type: integer
+      required:
+      - history_id
+    Search:
+      type: object
+      description: Results grouped by type.
+      properties:
+        artists:
+          $ref: '#/components/schemas/SearchGroup'
+        albums:
+          $ref: '#/components/schemas/SearchGroup'
+        tracks:
+          $ref: '#/components/schemas/SearchGroup'
+    SearchGroup:
+      type: object
+      description: A result group with its total.
+      properties:
+        count:
+          type: integer
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+      required:
+      - count
+      - results
+    SearchResult:
+      type: object
+      description: One result.
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        title:
+          type: string
+        image:
+          type: string
+        subtitle:
+          type: string
+      required:
+      - id
+      - image
+      - subtitle
+    SetupStatus:
+      type: object
+      properties:
+        needed:
+          type: boolean
+          description: The account has not been created yet.
+        code_required:
+          type: boolean
+          description: Creating it needs the setup code.
+      required:
+      - code_required
+      - needed
+    TechnicalLog:
+      type: object
+      description: One technical log line in the database.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        level:
+          allOf:
+          - $ref: '#/components/schemas/TechnicalLogLevelEnum'
+          readOnly: true
+        logger_name:
+          type: string
+          readOnly: true
+        msg:
+          type: string
+          readOnly: true
+        trace:
+          type: string
+          readOnly: true
+          nullable: true
+      required:
+      - created_at
+      - id
+      - level
+      - logger_name
+      - msg
+      - trace
+    TechnicalLogLevelEnum:
+      enum:
+      - 0
+      - 20
+      - 30
+      - 10
+      - 40
+      - 50
+      type: integer
+      description: |-
+        * `0` - NotSet
+        * `20` - Info
+        * `30` - Warning
+        * `10` - Debug
+        * `40` - Error
+        * `50` - Fatal
+    Track:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        album:
+          type: integer
+          readOnly: true
+        recording:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        track_number:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          default: 1
+        disc_number:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          default: 1
+        duration:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Seconds.
+        explicit:
+          type: boolean
+          readOnly: true
+        video_id:
+          type: string
+          readOnly: true
+          nullable: true
+        artists:
+          type: array
+          items:
+            $ref: '#/components/schemas/Credit'
+          readOnly: true
+        downloaded:
+          type: boolean
+          readOnly: true
+        also_on:
+          type: integer
+          readOnly: true
+          default: 0
+          description: Other albums holding the same recording.
+        copyable:
+          type: boolean
+          readOnly: true
+          default: false
+          description: Downloading it copies the audio already stored for another
+            album.
+        cover_url:
+          type: string
+          readOnly: true
+      required:
+      - album
+      - also_on
+      - artists
+      - copyable
+      - cover_url
+      - downloaded
+      - duration
+      - explicit
+      - id
+      - recording
+      - title
+      - video_id
+    TrackRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        track_number:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          default: 1
+        disc_number:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          default: 1
+      required:
+      - title
+    TrackUploadRequest:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+          description: mp3, m4a, flac, opus, ogg or wav; 200 MB at most.
+      required:
+      - file
+    UsernameChangeRequest:
+      type: object
+      description: Asks for the current password, so a hijacked session cannot change
+        credentials.
+      properties:
+        current_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        username:
+          type: string
+          minLength: 1
+          maxLength: 150
+      required:
+      - current_password
+      - username
+    Video:
+      type: object
+      properties:
+        video_id:
+          type: string
+        embed_url:
+          type: string
+          format: uri
+          description: URL for an iframe on youtube-nocookie.com.
+      required:
+      - embed_url
+      - video_id
+    Watch:
+      type: object
+      description: |-
+        New-release watch with ordered artists.
+
+        Artists are read from ``artists`` and written as an ordered id list in ``artist_ids``;
+        leaving ``artist_ids`` out keeps them unchanged.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        enabled:
+          type: boolean
+        interval_hours:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+          title: Interval (hours)
+        auto_download:
+          type: boolean
+          title: Automatic download
+        artists:
+          type: array
+          items:
+            $ref: '#/components/schemas/Credit'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Created
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Updated
+      required:
+      - artists
+      - created_at
+      - id
+      - name
+      - updated_at
+    WatchRequest:
+      type: object
+      description: |-
+        New-release watch with ordered artists.
+
+        Artists are read from ``artists`` and written as an ordered id list in ``artist_ids``;
+        leaving ``artist_ids`` out keeps them unchanged.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        enabled:
+          type: boolean
+        interval_hours:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+          title: Interval (hours)
+        auto_download:
+          type: boolean
+          title: Automatic download
+        artist_ids:
+          type: array
+          items:
+            type: integer
+          writeOnly: true
+      required:
+      - name
+    WatchRun:
+      type: object
+      description: One check result, read-only.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        watch:
+          type: integer
+          readOnly: true
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Started
+        finished_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Finished
+        status:
+          allOf:
+          - $ref: '#/components/schemas/WatchRunStatusEnum'
+          readOnly: true
+        found:
+          type: integer
+          readOnly: true
+          title: New releases found
+        detail:
+          type: string
+          readOnly: true
+      required:
+      - detail
+      - finished_at
+      - found
+      - id
+      - started_at
+      - status
+      - watch
+    WatchRunStatusEnum:
+      enum:
+      - succeeded
+      - failed
+      type: string
+      description: |-
+        * `succeeded` - succeeded
+        * `failed` - failed
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid

@@ -1,0 +1,25 @@
+# Vibratto Metadata with Docker: `docker compose up -d`, then open http://localhost:8000.
+# The setup code the first screen asks for is printed in `docker compose logs`.
+services:
+  vibratto-metadata:
+    image: ghcr.io/vibratto/metadata:latest
+    # To build the image from this checkout instead of pulling it, uncomment:
+    # build: .
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Plain HTTP access. Behind an HTTPS reverse proxy, remove this line and enable the next two.
+      DJANGO_ALLOW_INSECURE_HTTP: "1"
+      # DJANGO_TRUST_PROXY_SSL_HEADER: "1"
+      # DJANGO_AXES_TRUST_FORWARDED_FOR: "1"
+      # Names the application answers to; any by default. Example: music.example.com
+      # DJANGO_ALLOWED_HOSTS: music.example.com
+    volumes:
+      # Database and settings.
+      - data:/data
+      # Where the music is downloaded.
+      - ./music:/data/music
+
+volumes:
+  data:

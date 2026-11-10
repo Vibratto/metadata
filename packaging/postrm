@@ -1,0 +1,18 @@
+#!/bin/sh
+set -e
+name=vibratto-metadata
+
+# "apt remove" keeps the database, the music and the settings; "apt purge" deletes them too.
+if [ "$1" = remove ] || [ "$1" = purge ]; then
+  if [ -d /run/systemd/system ]; then
+    systemctl disable "$name" >/dev/null 2>&1 || true
+    systemctl daemon-reload || true
+  fi
+  # Created on install, so dpkg does not know about them.
+  rm -rf "/opt/$name"
+fi
+
+if [ "$1" = purge ]; then
+  rm -rf "/var/lib/$name" "/etc/$name"
+  if getent passwd "$name" >/dev/null; then deluser --system --quiet "$name" || true; fi
+fi

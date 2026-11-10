@@ -1,0 +1,26 @@
+{
+  "settings": {
+    "nav": "Ajustes",
+    "title": "Ajustes globales",
+    "accountLink": "Tus ajustes personales están en Mi cuenta.",
+    "format": "Formato de descarga",
+    "folder": "Carpeta de descargas",
+    "template": "Plantilla de nombres",
+    "templateHint": "Usa / para separar carpetas. Marcadores: {placeholders}. Pon {album} en las carpetas y {title} o {track} en el nombre del archivo. Los nombres se guardan en minúsculas, sin acentos ni espacios y con el id del catálogo; lo que se ve sale de las etiquetas.",
+    "save": "Guardar ajustes",
+    "saved": "Ajustes guardados.",
+    "tags": {
+      "title": "Etiquetas",
+      "separators": "Separadores de artistas",
+      "separator": "Separador {n}",
+      "up": "Subir separador {n}",
+      "down": "Bajar separador {n}",
+      "remove": "Quitar separador {n}",
+      "add": "Añadir separador",
+      "reset": "Restablecer los de Navidrome",
+      "hint": "El primero se usa para unir los nombres que se muestran. Si cambias esta lista y algún archivo no tiene la etiqueta ARTISTS, configura lo mismo en Navidrome."
+    },
+    "threshold": "Sugerir importar artistas relacionados a partir de",
+    "thresholdHint": "Oyentes mensuales (o suscriptores, cuando YouTube Music no publica los oyentes). A los artistas relacionados que superan esta cifra se les sugiere «Importar discografía»."
+  }
+}

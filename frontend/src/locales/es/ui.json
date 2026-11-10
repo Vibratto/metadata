@@ -1,0 +1,61 @@
+{
+  "ui": {
+    "close": "Cerrar",
+    "clearSearch": "Borrar búsqueda",
+    "list": {
+      "empty": "No hay nada que mostrar."
+    },
+    "filters": {
+      "title": "Filtros"
+    },
+    "job": {
+      "progress": "Progreso de la tarea",
+      "lines": "Registro de la tarea",
+      "stop": "Detener",
+      "status": {
+        "pending": "Pendiente",
+        "running": "En curso",
+        "stopping": "Deteniendo…",
+        "stopped": "Detenida",
+        "succeeded": "Terminada",
+        "failed": "Fallida",
+        "interrupted": "Interrumpida"
+      }
+    },
+    "combobox": {
+      "placeholder": "Escribe para buscar…",
+      "loading": "Cargando…",
+      "empty": "Sin resultados",
+      "error": "No se pudo buscar",
+      "results": "{n} resultados",
+      "remove": "Quitar {name}"
+    },
+    "activeFilters": {
+      "title": "Filtros aplicados",
+      "remove": "Quitar el filtro {name}",
+      "clear": "Quitar todos"
+    },
+    "audience": {
+      "listeners": "{n} oyentes mensuales",
+      "subscribers": "{n} suscriptores"
+    }
+  },
+  "nav": {
+    "main": "Navegación principal",
+    "home": "Inicio",
+    "more": "Más",
+    "sections": {
+      "follow": "Seguimiento",
+      "admin": "Administración"
+    },
+    "account": "Tu cuenta"
+  },
+  "errors": {
+    "network": "No se pudo conectar con el servidor.",
+    "unauthorized": "Tu sesión ha caducado. Inicia sesión de nuevo.",
+    "forbidden": "No tienes permiso para hacer esto.",
+    "notFound": "No se ha encontrado lo que buscabas.",
+    "server": "El servidor ha fallado. Inténtalo más tarde.",
+    "unknown": "Ha ocurrido un error inesperado."
+  }
+}

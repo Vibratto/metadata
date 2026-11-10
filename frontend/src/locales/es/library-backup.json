@@ -1,0 +1,27 @@
+{
+  "libraryBackup": {
+    "title": "Copia de la biblioteca",
+    "intro": "Guarda la biblioteca en un fichero JSON o recupérala en esta u otra instalación.",
+    "export": {
+      "title": "Exportar",
+      "link": "Descargar la copia"
+    },
+    "restore": {
+      "title": "Importar",
+      "file": "Fichero de copia (JSON)",
+      "hint": "Solo se añade lo que falta: lo que ya existe no se modifica.",
+      "previewTitle": "Contenido de la copia",
+      "kind": "Tipo",
+      "total": "En la copia",
+      "existing": "Ya existen",
+      "new": "Nuevos",
+      "confirm": "Importar la copia"
+    },
+    "kinds": {
+      "artists": "Artistas",
+      "albums": "Álbumes",
+      "tracks": "Canciones",
+      "downloads": "Descargas"
+    }
+  }
+}

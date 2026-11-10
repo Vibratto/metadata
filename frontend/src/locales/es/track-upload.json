@@ -1,0 +1,11 @@
+{
+  "trackUpload": {
+    "title": "Subir audio",
+    "intro": "Si no se encuentra el audio de «{title}», súbelo tú: se convertirá y etiquetará con los datos de la canción.",
+    "file": "Fichero de audio",
+    "hint": "mp3, m4a, flac, opus, ogg o wav; 200 MB como mucho.",
+    "submit": "Subir",
+    "progress": "Progreso de la subida",
+    "done": "Audio guardado. La canción ya está descargada."
+  }
+}

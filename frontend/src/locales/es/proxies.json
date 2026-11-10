@@ -1,0 +1,78 @@
+{
+  "proxies": {
+    "nav": "Proxies",
+    "title": "Proxies",
+    "intro": "Todas las conexiones salientes (YouTube Music, LRCLIB, portadas y descargas) salen por los proxies activos y se reparten entre ellos. Cada servicio solo usa los proxies del tipo de IP que admite; se comprueba la primera vez que se usa.",
+    "add": "Añadir proxy",
+    "columns": {
+      "url": "Dirección",
+      "status": "Estado",
+      "success": "Éxitos",
+      "failure": "Fallos",
+      "lastUsed": "Último uso",
+      "ipVersion": "IP",
+      "actions": "Acciones"
+    },
+    "status": {
+      "enabled": "Activo",
+      "disabled": "Inactivo"
+    },
+    "never": "Nunca",
+    "actions": {
+      "edit": "Editar",
+      "enable": "Activar",
+      "disable": "Desactivar",
+      "check": "Probar",
+      "delete": "Borrar"
+    },
+    "form": {
+      "createTitle": "Nuevo proxy",
+      "editTitle": "Editar proxy",
+      "url": "Dirección (http, https, socks5 o socks5h)",
+      "ipVersion": "Tipo de IP",
+      "enabled": "Activo",
+      "save": "Guardar"
+    },
+    "delete": {
+      "title": "Borrar proxy",
+      "confirm": "¿Borrar {url}? No se puede deshacer.",
+      "submit": "Borrar"
+    },
+    "check": {
+      "ok": "{url} funciona (HTTP {status}).",
+      "failed": "{url} no responde.",
+      "failedStatus": "{url} responde con un error (HTTP {status})."
+    },
+    "done": {
+      "created": "Proxy añadido.",
+      "updated": "Proxy guardado.",
+      "deleted": "Proxy borrado."
+    },
+    "bulk": {
+      "add": "Añadir varios",
+      "title": "Añadir varios proxies",
+      "text": "Lista de proxies (uno por línea)",
+      "hint": "Formatos: esquema://usuario:clave{'@'}host:puerto, host:puerto o host:puerto:usuario:clave. Las líneas vacías y las que empiezan por # se ignoran.",
+      "ipVersion": "Tipo de IP para todas las líneas",
+      "defaultScheme": "Esquema para las líneas sin esquema",
+      "enabled": "Activo",
+      "submit": "Añadir",
+      "summary": "Añadidos: {created} · Duplicados: {duplicates} · Inválidos: {invalid}",
+      "invalidTitle": "Líneas rechazadas",
+      "line": "Línea {line}: {reason}",
+      "reasons": {
+        "invalid_characters": "Tiene caracteres de control.",
+        "scheme_not_allowed": "El esquema no está permitido.",
+        "path_query_or_fragment": "No admite ruta, parámetros ni fragmento.",
+        "missing_user": "Falta el usuario.",
+        "missing_password": "Falta la clave.",
+        "missing_host": "Falta el host.",
+        "missing_port": "Falta el puerto.",
+        "invalid_port": "El puerto no es válido.",
+        "invalid_format": "Formato no reconocido.",
+        "unclosed_ipv6": "Falta cerrar el corchete de la IPv6.",
+        "too_long": "Supera los 500 caracteres."
+      }
+    }
+  }
+}

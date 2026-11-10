@@ -1,0 +1,31 @@
+{
+  "theme": {
+    "title": "Theme",
+    "label": "Theme: {theme}",
+    "auto": "automatic",
+    "light": "light",
+    "dark": "dark"
+  },
+  "search": {
+    "label": "Search your library",
+    "placeholder": "Search your library…",
+    "scopeLabel": "Where to search",
+    "scope": {
+      "all": "All",
+      "artists": "Artists",
+      "albums": "Albums",
+      "tracks": "Tracks"
+    },
+    "more": {
+      "artists": "See {n} artist | See all {n} artists",
+      "albums": "See {n} album | See all {n} albums",
+      "tracks": "See {n} track | See all {n} tracks"
+    },
+    "loading": "Searching…",
+    "empty": "No results",
+    "found": "{n} results"
+  },
+  "jobsIndicator": {
+    "count": "{n} running job | {n} running jobs"
+  }
+}

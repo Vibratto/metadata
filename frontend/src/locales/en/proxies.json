@@ -1,0 +1,78 @@
+{
+  "proxies": {
+    "nav": "Proxies",
+    "title": "Proxies",
+    "intro": "All outgoing connections (YouTube Music, LRCLIB, covers and downloads) go out through the enabled proxies, spread across them. Each service only uses proxies of an IP version it supports; this is checked the first time it is used.",
+    "add": "Add proxy",
+    "columns": {
+      "url": "Address",
+      "status": "Status",
+      "success": "Successes",
+      "failure": "Failures",
+      "lastUsed": "Last used",
+      "ipVersion": "IP",
+      "actions": "Actions"
+    },
+    "status": {
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    },
+    "never": "Never",
+    "actions": {
+      "edit": "Edit",
+      "enable": "Enable",
+      "disable": "Disable",
+      "check": "Test",
+      "delete": "Delete"
+    },
+    "form": {
+      "createTitle": "New proxy",
+      "editTitle": "Edit proxy",
+      "url": "Address (http, https, socks5 or socks5h)",
+      "ipVersion": "IP version",
+      "enabled": "Enabled",
+      "save": "Save"
+    },
+    "delete": {
+      "title": "Delete proxy",
+      "confirm": "Delete {url}? This cannot be undone.",
+      "submit": "Delete"
+    },
+    "check": {
+      "ok": "{url} works (HTTP {status}).",
+      "failed": "{url} does not respond.",
+      "failedStatus": "{url} responds with an error (HTTP {status})."
+    },
+    "done": {
+      "created": "Proxy added.",
+      "updated": "Proxy saved.",
+      "deleted": "Proxy deleted."
+    },
+    "bulk": {
+      "add": "Add several",
+      "title": "Add several proxies",
+      "text": "Proxy list (one per line)",
+      "hint": "Formats: scheme://user:password{'@'}host:port, host:port or host:port:user:password. Blank lines and lines starting with # are ignored.",
+      "ipVersion": "IP type for all lines",
+      "defaultScheme": "Scheme for lines without one",
+      "enabled": "Active",
+      "submit": "Add",
+      "summary": "Added: {created} · Duplicates: {duplicates} · Invalid: {invalid}",
+      "invalidTitle": "Rejected lines",
+      "line": "Line {line}: {reason}",
+      "reasons": {
+        "invalid_characters": "It has control characters.",
+        "scheme_not_allowed": "The scheme is not allowed.",
+        "path_query_or_fragment": "Paths, parameters and fragments are not allowed.",
+        "missing_user": "The user is missing.",
+        "missing_password": "The password is missing.",
+        "missing_host": "The host is missing.",
+        "missing_port": "The port is missing.",
+        "invalid_port": "The port is not valid.",
+        "invalid_format": "Unrecognized format.",
+        "unclosed_ipv6": "The IPv6 bracket is not closed.",
+        "too_long": "It is longer than 500 characters."
+      }
+    }
+  }
+}

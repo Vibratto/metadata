@@ -1,0 +1,20 @@
+{
+  "name": "Vibratto Metadata",
+  "short_name": "Vibratto",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f6f3",
+  "theme_color": "#f7f6f3",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "color_scheme_dark": {
+    "background_color": "#111014",
+    "theme_color": "#111014"
+  }
+}

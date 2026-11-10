@@ -1,0 +1,26 @@
+{
+  "settings": {
+    "nav": "Settings",
+    "title": "Global settings",
+    "accountLink": "Your personal settings are in My account.",
+    "format": "Download format",
+    "folder": "Download folder",
+    "template": "Naming template",
+    "templateHint": "Use / to separate folders. Placeholders: {placeholders}. Put {album} in the folders and {title} or {track} in the file name. Names are stored in lowercase, without accents or spaces and with the catalogue id; what you see comes from the tags.",
+    "save": "Save settings",
+    "saved": "Settings saved.",
+    "tags": {
+      "title": "Tags",
+      "separators": "Artist separators",
+      "separator": "Separator {n}",
+      "up": "Move separator {n} up",
+      "down": "Move separator {n} down",
+      "remove": "Remove separator {n}",
+      "add": "Add separator",
+      "reset": "Restore Navidrome's",
+      "hint": "The first one joins the names that are shown. If you change this list and some file lacks the ARTISTS tag, set the same in Navidrome."
+    },
+    "threshold": "Suggest importing related artists from",
+    "thresholdHint": "Monthly listeners (or subscribers, when YouTube Music does not publish listeners). Related artists above this figure get an “Import discography” suggestion."
+  }
+}

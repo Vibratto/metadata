@@ -1,0 +1,68 @@
+{
+  "watches": {
+    "nav": "Novedades",
+    "title": "Novedades",
+    "intro": "Busca lanzamientos nuevos de los artistas elegidos cada cierto tiempo.",
+    "new": "Nueva búsqueda",
+    "columns": {
+      "name": "Nombre",
+      "artists": "Artistas",
+      "interval": "Cada",
+      "state": "Estado"
+    },
+    "hours": "{n} hora | {n} horas",
+    "enabled": "Activa",
+    "disabled": "Pausada",
+    "autoDownload": "Descarga automática",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "form": {
+      "createTitle": "Nueva búsqueda de novedades",
+      "editTitle": "Editar «{name}»",
+      "name": "Nombre",
+      "interval": "Intervalo en horas",
+      "autoDownload": "Descargar automáticamente lo que encuentre",
+      "enabled": "Activa",
+      "artists": "Artistas",
+      "noArtists": "Todavía no hay artistas.",
+      "search": "Buscar en el catálogo",
+      "searchButton": "Buscar",
+      "noResults": "Ningún artista del catálogo coincide.",
+      "add": "Añadir {name}",
+      "up": "Subir {name}",
+      "down": "Bajar {name}",
+      "remove": "Quitar {name}",
+      "save": "Guardar",
+      "cancel": "Cancelar"
+    },
+    "detail": {
+      "edit": "Editar",
+      "delete": "Borrar",
+      "check": "Comprobar ahora",
+      "history": "Historial de comprobaciones",
+      "back": "Volver a Novedades",
+      "confirmTitle": "¿Borrar «{name}»?",
+      "confirmText": "La búsqueda deja de comprobarse. Lo que ya se haya importado se queda en la biblioteca.",
+      "confirm": "Sí, borrar"
+    },
+    "runs": {
+      "finished": "Fecha",
+      "status": "Resultado",
+      "found": "Novedades",
+      "detail": "Detalle",
+      "succeeded": "Correcta",
+      "failed": "Fallida"
+    },
+    "filters": {
+      "search": "Buscar",
+      "ordering": "Ordenar por",
+      "default": "Orden predeterminado",
+      "name": "Nombre (A-Z)",
+      "name_desc": "Nombre (Z-A)",
+      "next_run_at": "Próxima ejecución",
+      "enabled": "Estado",
+      "auto_download": "Descarga automática",
+      "artist": "Artista"
+    }
+  }
+}

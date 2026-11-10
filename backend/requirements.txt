@@ -1,0 +1,14 @@
+Django>=6.1.2,<6.2
+djangorestframework>=3.18.3
+drf-spectacular>=0.30.0
+whitenoise>=6.12.0
+django-filter>=26.2
+django-axes[ipware]>=9.0.0
+django-simple-history>=3.13
+django-db-logger>=0.1.13
+requests>=2.34.2
+yt-dlp>=2026.10
+ytmusicapi>=1.11.1
+mutagen>=1.48.1
+drf-spectacular-sidecar>=2026.10.1
+gunicorn>=26.2.0

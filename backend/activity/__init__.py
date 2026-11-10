@@ -1,0 +1,1 @@
+"""App ``activity``. / ``activity`` app."""

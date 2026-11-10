@@ -1,0 +1,162 @@
+{
+  "library": {
+    "nav": "Biblioteca",
+    "title": "Biblioteca",
+    "tabs": "Tipo de elemento",
+    "kind": {
+      "artists": "Artistas",
+      "albums": "Álbumes",
+      "tracks": "Canciones",
+      "related": "Relacionados"
+    },
+    "loading": "Cargando…",
+    "pages": "Páginas",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "page": "Página {page} · {count} en total",
+    "yes": "Sí",
+    "no": "No",
+    "back": "Volver a la biblioteca",
+    "fields": {
+      "name": "Nombre",
+      "title": "Título",
+      "artists": "Artistas",
+      "album": "Álbum",
+      "duration": "Duración",
+      "downloaded": "Descargada",
+      "preview": "Vista previa",
+      "track_number": "Número de pista",
+      "disc_number": "Número de disco",
+      "image_url": "URL de la imagen",
+      "cover_url": "URL de la portada",
+      "year": "Año",
+      "audience": "Audiencia",
+      "external_id": "ID de YouTube Music",
+      "description": "Descripción"
+    },
+    "filters": {
+      "search": "Buscar",
+      "ordering": "Ordenar por",
+      "any": "Todas",
+      "apply": "Aplicar"
+    },
+    "ordering": {
+      "default": "Orden predeterminado",
+      "name": "Nombre (A-Z)",
+      "name_desc": "Nombre (Z-A)",
+      "title": "Título (A-Z)",
+      "title_desc": "Título (Z-A)",
+      "track_number": "Número de pista",
+      "track_count_desc": "Más canciones primero",
+      "pending_count_desc": "Más pendientes primero",
+      "album__title": "Álbum (A-Z)",
+      "duration": "Duración (más cortas primero)",
+      "duration_desc": "Duración (más largas primero)",
+      "year": "Año (más antiguos primero)",
+      "year_desc": "Año (más recientes primero)",
+      "album__year_desc": "Álbum (más recientes primero)",
+      "monthly_listeners_desc": "Más oyentes primero"
+    },
+    "links": {
+      "title": "Relacionado",
+      "album": "Ver el álbum",
+      "albums": "Ver sus álbumes",
+      "tracks": "Ver sus canciones",
+      "upload": "Subir audio"
+    },
+    "edit": {
+      "title": "Editar",
+      "save": "Guardar cambios",
+      "done": "Cambios guardados."
+    },
+    "artists": {
+      "title": "Artistas",
+      "up": "Subir a {name}",
+      "down": "Bajar a {name}",
+      "remove": "Quitar a {name}",
+      "search": "Buscar un artista del catálogo",
+      "find": "Buscar",
+      "add": "Añadir",
+      "save": "Guardar artistas",
+      "done": "Artistas actualizados."
+    },
+    "history": {
+      "title": "Historial",
+      "type": {
+        "created": "Creado",
+        "changed": "Modificado",
+        "deleted": "Borrado"
+      },
+      "system": "Sistema",
+      "revert": "Volver a esta versión",
+      "done": "Se ha vuelto a la versión elegida."
+    },
+    "block": {
+      "action": "Bloquear",
+      "title": "Bloquear",
+      "done": "Bloqueado: no se volverá a importar ni a descargar.",
+      "confirm": {
+        "albums": "¿Bloquear el álbum «{name}»? No se volverá a importar ni a descargar.",
+        "tracks": "¿Bloquear la canción «{name}»? No se volverá a importar ni a descargar."
+      }
+    },
+    "delete": {
+      "action": "Borrar",
+      "title": "Borrar",
+      "also_block": "Bloquear también, para que no se vuelva a importar ni a descargar",
+      "confirm": {
+        "albums": "¿Borrar el álbum «{name}»? Se borrarán también sus canciones y los ficheros de audio descargados.",
+        "tracks": "¿Borrar la canción «{name}»? Se borrará también su fichero de audio descargado."
+      }
+    },
+    "kindOne": {
+      "artists": "Artista",
+      "albums": "Álbum",
+      "tracks": "Canción",
+      "related": "Artista"
+    },
+    "danger": {
+      "title": "Zona delicada",
+      "text": "Bloquear evita que vuelva a importarse. Eliminar no se puede deshacer."
+    },
+    "filterLabels": {
+      "artist": "Artista",
+      "album": "Álbum",
+      "has_pending": "Con pendientes",
+      "has_downloads": "Con descargas",
+      "watched": "Vigilados",
+      "record_type": "Tipo",
+      "download_status": "Descarga",
+      "year_from": "Año desde",
+      "year_to": "Año hasta",
+      "downloaded": "Descargada",
+      "explicit": "Explícita",
+      "duration_min": "Duración mínima (s)",
+      "duration_max": "Duración máxima (s)"
+    },
+    "options": {
+      "yes": "Sí",
+      "no": "No",
+      "album": "Álbum",
+      "single": "Sencillo",
+      "ep": "EP",
+      "complete": "Completo",
+      "partial": "Parcial",
+      "none": "Sin descargar"
+    },
+    "counts": "{tracks} canciones · {pending} pendientes",
+    "appearances": {
+      "title": "También aparece en",
+      "none": "Esta grabación solo está en este álbum.",
+      "split": "Separar de las demás",
+      "merge_id": "Id de la grabación que se absorbe",
+      "merge_hint": "Sus álbumes pasan a esta grabación.",
+      "merge": "Fusionar"
+    },
+    "also_on": "En otro álbum | En otros {n} álbumes",
+    "related": {
+      "intro": "Artistas relacionados con los que has importado. Solo se guarda su perfil; importa la discografía de los que quieras.",
+      "import": "Importar discografía"
+    }
+  }
+}

@@ -1,0 +1,71 @@
+name: Release
+
+# Pushing a vX.Y.Z tag publishes a GitHub Release with the .deb and pushes the Docker image
+# to ghcr.io. With a suffix (vX.Y.Z-rc.1) the Release is marked as a pre-release and the
+# image is not tagged "latest".
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+", "v[0-9]+.[0-9]+.[0-9]+-*"]
+
+permissions:
+  contents: read
+
+jobs:
+  # The same checks as a pull request; if any fails, nothing is published.
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  deb:
+    needs: [ci]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gettext
+      - run: npm --prefix frontend ci && npm --prefix frontend run build
+      - run: packaging/build-deb.sh "$(packaging/deb-version.sh "$GITHUB_REF_NAME")"
+      - name: Publish
+        working-directory: dist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha256sum *.deb > SHA256SUMS
+          pre=()
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then pre=(--prerelease); fi
+          # If the Release already exists (created by hand on the website), only upload the files.
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" *.deb SHA256SUMS --clobber
+            gh release edit "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" "${pre[@]}"
+          else
+            gh release create "$GITHUB_REF_NAME" *.deb SHA256SUMS --title "$GITHUB_REF_NAME" --generate-notes "${pre[@]}"
+          fi
+
+  docker:
+    needs: [ci]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Sign in to ghcr.io
+        run: echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: Build and push for amd64 and arm64
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          tags=(--tag "$image:${GITHUB_REF_NAME#v}")
+          if [[ "$GITHUB_REF_NAME" != *-* ]]; then tags+=(--tag "$image:latest"); fi
+          # arm64 is built through emulation.
+          docker run --privileged --rm tonistiigi/binfmt --install arm64
+          docker buildx create --use
+          docker buildx build --platform linux/amd64,linux/arm64 "${tags[@]}" \
+            --label "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \
+            --label "org.opencontainers.image.version=${GITHUB_REF_NAME#v}" \
+            --label "org.opencontainers.image.licenses=AGPL-3.0-only" \
+            --push .

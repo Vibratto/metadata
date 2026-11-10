@@ -1,0 +1,61 @@
+{
+  "ui": {
+    "close": "Close",
+    "clearSearch": "Clear search",
+    "list": {
+      "empty": "Nothing to show."
+    },
+    "filters": {
+      "title": "Filters"
+    },
+    "job": {
+      "progress": "Job progress",
+      "lines": "Job log",
+      "stop": "Stop",
+      "status": {
+        "pending": "Pending",
+        "running": "Running",
+        "stopping": "Stopping…",
+        "stopped": "Stopped",
+        "succeeded": "Finished",
+        "failed": "Failed",
+        "interrupted": "Interrupted"
+      }
+    },
+    "combobox": {
+      "placeholder": "Type to search…",
+      "loading": "Loading…",
+      "empty": "No results",
+      "error": "Search failed",
+      "results": "{n} results",
+      "remove": "Remove {name}"
+    },
+    "activeFilters": {
+      "title": "Applied filters",
+      "remove": "Remove filter {name}",
+      "clear": "Remove all"
+    },
+    "audience": {
+      "listeners": "{n} monthly listeners",
+      "subscribers": "{n} subscribers"
+    }
+  },
+  "nav": {
+    "main": "Main navigation",
+    "home": "Home",
+    "more": "More",
+    "sections": {
+      "follow": "Follow-up",
+      "admin": "Administration"
+    },
+    "account": "Your account"
+  },
+  "errors": {
+    "network": "Could not reach the server.",
+    "unauthorized": "Your session has expired. Please sign in again.",
+    "forbidden": "You are not allowed to do this.",
+    "notFound": "We could not find what you were looking for.",
+    "server": "The server failed. Please try again later.",
+    "unknown": "An unexpected error occurred."
+  }
+}

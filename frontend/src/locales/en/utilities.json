@@ -1,0 +1,31 @@
+{
+  "utilities": {
+    "nav": "Utilities",
+    "title": "Utilities",
+    "intro": "Review the downloaded library. No operation deletes anything.",
+    "operations": "Operations",
+    "operation": {
+      "retag": "Retag the downloaded files",
+      "replaygain": "Recompute the ReplayGain of the whole library",
+      "relocate": "Move the files to the template names, without retagging",
+      "check_files": "Check the files are still on disk",
+      "complete_artists": "Refresh artist profiles (image, description and audience)",
+      "lyrics": "Look up missing lyrics (LRCLIB and YouTube Music)",
+      "complete_albums": "Complete albums with their missing tracks (queries YouTube Music)"
+    },
+    "start": "Run",
+    "conflict": "Retagging and ReplayGain do not go in the same run as relocating: let Navidrome scan in between.",
+    "summary": {
+      "title": "Summary",
+      "retag": "Files retagged: {retagged}. Failed: {failed}.",
+      "replaygain": "ReplayGain: {albums} albums and {files} files. Failed albums: {failed}.",
+      "relocate": "Files moved: {moved}. Already in place: {unchanged}. Failed: {failed}.",
+      "check_files": "Files checked: {checked}. Missing: {missing}.",
+      "missing": "Downloads without a file: {ids}.",
+      "complete_artists": "Artists reviewed: {reviewed}. Completed: {completed}. Unchanged: {unchanged}. Failed: {errors}.",
+      "lyrics": "Lyrics saved: {found}. Not found: {not_found}. No answer: {failed}.",
+      "complete_albums": "Albums checked: {albums}. Tracks added: {tracks} ({reused_recordings} with an already known recording). No answer from YouTube Music: {errors}."
+    },
+    "backup": "Library backup"
+  }
+}

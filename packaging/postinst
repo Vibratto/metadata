@@ -1,0 +1,61 @@
+#!/bin/sh
+set -e
+[ "$1" = configure ] || exit 0
+
+name=vibratto-metadata
+app=/opt/$name
+data=/var/lib/$name
+env=/etc/$name/$name.env
+
+adduser --system --group --home "$data" "$name" >/dev/null
+install -d -o "$name" -g "$name" -m 0750 "$data"
+
+chmod 640 "$env" && chgrp "$name" "$env"
+
+if ! grep -q '^DJANGO_SECRET_KEY=' "$env"; then
+  echo "DJANGO_SECRET_KEY=$(head -c 48 /dev/urandom | base64 | tr -d '+/=\n')" >> "$env"
+fi
+
+# One-time code the web interface asks for to create the account.
+if ! grep -q '^VIBRATTO_SETUP_CODE=' "$env"; then
+  echo "VIBRATTO_SETUP_CODE=$(head -c 24 /dev/urandom | base64 | tr -d '+/=\n')" >> "$env"
+fi
+
+# First install: allow the machine's name and addresses. A list you already edited is left alone.
+if grep -qx 'DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1' "$env"; then
+  hosts="localhost,127.0.0.1,$(hostname)"
+  for ip in $(hostname -I 2>/dev/null); do hosts="$hosts,$ip"; done
+  sed -i "s|^DJANGO_ALLOWED_HOSTS=.*|DJANGO_ALLOWED_HOSTS=$hosts|" "$env"
+fi
+
+python3 -m venv "$app/venv"
+# Exact, hash-checked versions; yt-dlp separately and current, because YouTube changes often.
+"$app/venv/bin/pip" install --quiet --require-hashes -r "$app/backend/requirements.lock"
+"$app/venv/bin/pip" install --quiet --upgrade yt-dlp
+
+# The code belongs to root, so the service cannot modify it; it only owns the data and the
+# static files. The .pyc files are compiled here because the service cannot write them.
+chown -R root:root "$app/backend"
+install -d -o "$name" -g "$name" -m 0755 "$app/backend/staticfiles"
+chown -R "$name:$name" "$app/backend/staticfiles" "$data"
+"$app/venv/bin/python" -m compileall -q "$app/backend" >/dev/null
+
+run() { runuser -u "$name" -- sh -c "set -a; . $env; cd $app/backend; $*"; }
+
+run "$app/venv/bin/python manage.py migrate --noinput"
+run "$app/venv/bin/python manage.py collectstatic --noinput -v0"
+
+# Without systemd (a container, a chroot) the files are installed but nothing is started.
+if [ -d /run/systemd/system ]; then
+  systemctl daemon-reload
+  systemctl enable "$name" >/dev/null 2>&1 || true
+  systemctl restart "$name" || true
+fi
+
+# Until the account exists, the web interface asks for this code to create it.
+if run "$app/venv/bin/python manage.py shell -c 'from django.contrib.auth.models import User; raise SystemExit(User.objects.exists())'"; then
+  code=$(sed -n 's/^VIBRATTO_SETUP_CODE=//p' "$env")
+  port=$(sed -n 's/^VIBRATTO_BIND=.*:\([0-9]*\)$/\1/p' "$env")
+  echo "Vibratto Metadata is running on port ${port:-8000}."
+  echo "Setup code: $code"
+fi
