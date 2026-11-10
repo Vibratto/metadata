@@ -156,7 +156,9 @@ describe('WatchesView', () => {
   it('picks the artist of the watch with the searchable picker', async () => {
     const { wrapper, router } = await mount(WatchesView, '/watches')
     await wrapper.get('input[role="combobox"]').trigger('focus')
-    await vi.waitFor(() => expect(wrapper.findAll('.combo [role="option"]').length).toBeGreaterThan(0))
+    await vi.waitFor(() =>
+      expect(wrapper.findAll('.combo [role="option"]').length).toBeGreaterThan(0),
+    )
     await wrapper.get('.combo [role="option"]').trigger('mousedown')
     await settle()
     await vi.waitFor(() => expect(router.currentRoute.value.query.artist).toBeDefined())

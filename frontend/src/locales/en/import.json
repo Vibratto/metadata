@@ -5,7 +5,7 @@
     "search": {
       "label": "Artist or YouTube Music link",
       "submit": "Search",
-      "empty": "Type an artist name, or paste their YouTube Music link (the channel link or the @name one), to look them up.",
+      "empty": "Type an artist name, or paste their YouTube Music link (the channel link or the {'@'}name one), to look them up.",
       "none": "YouTube Music found no artist matching “{q}”.",
       "results": "Results"
     },

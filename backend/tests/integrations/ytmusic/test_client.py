@@ -95,7 +95,7 @@ def test_shelves_without_a_header_are_skipped() -> None:
     seen: list[list[Any]] = []
     parse = _skip_headerless_shelves(lambda results: seen.append(results) or "parsed")
     albums = {"musicCarouselShelfRenderer": {"header": {"title": "Albums"}, "contents": []}}
-    promo = {"musicCarouselShelfRenderer": {"contents": []}}
+    promo: dict[str, Any] = {"musicCarouselShelfRenderer": {"contents": []}}
     description = {"musicDescriptionShelfRenderer": {"description": "About"}}
     assert parse([albums, promo, description]) == "parsed"
     assert seen == [[albums, description]]

@@ -81,12 +81,12 @@ def test_downloads_converts_tags_and_records(fake_media: dict[str, Any], tmp_pat
     assert run.summary == {"downloaded": 1, "failed": 0, "skipped": 0}
     download = Download.objects.get(track=track)
     # Relative, portable, with the id.
-    assert download.file_path.endswith(f"-song-{track.pk}.mp3")
+    assert download.file_path.endswith(f"-song-{track.pk}.opus")
     assert not Path(download.file_path).is_absolute()
     assert (tmp_path / "library" / download.file_path).read_bytes() == b"audio"
-    assert download.audio_format == "mp3"
+    assert download.audio_format == "opus"
     assert download.source_url == "https://music.youtube.com/watch?v=vvvvvvvvvvv"
-    assert fake_media["tagged"][0][0] == "audio.mp3"
+    assert fake_media["tagged"][0][0] == "audio.opus"
     assert fake_media["tagged"][0][1].title == "Song"
     # The track carries its video id, so nothing is searched.
     assert fake_media["fetched"] == [("vvvvvvvvvvv", None)]
@@ -283,7 +283,7 @@ def test_measures_each_track_and_updates_each_album_once(fake_media: dict[str, A
     run = _run(track_ids=[first.pk, second.pk, other.pk])
 
     assert run.summary == {"downloaded": 3, "failed": 0, "skipped": 0}
-    assert fake_media["measured"] == [["audio.mp3"]] * 3
+    assert fake_media["measured"] == [["audio.opus"]] * 3
     assert {row.lufs for row in DownloadLoudness.objects.all()} == {-14.0}
     assert DownloadLoudness.objects.count() == 3
     assert fake_media["tagged"][0][1].replaygain.track_gain_db == -4.0

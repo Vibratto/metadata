@@ -77,16 +77,16 @@ def test_converts_tags_stores_and_records(
     assert response.data["id"] == track.pk
     assert response.data["downloaded"] is True
     download = Download.objects.get(track=track)
-    assert download.file_path.endswith(f"-song-{track.pk}.mp3")
+    assert download.file_path.endswith(f"-song-{track.pk}.opus")
     assert not Path(download.file_path).is_absolute()
     assert (tmp_path / "library" / download.file_path).read_bytes() == b"audio"
-    assert download.audio_format == "mp3"
+    assert download.audio_format == "opus"
     # No source URL: that is what tells an upload from a download.
     assert download.source_url == ""
     assert fake_media["converted"] == [_wav()]
     assert fake_media["tagged"][0].title == "Song"
     log = ActivityLog.objects.get(action="catalog.track.uploaded")
-    assert log.detail == {"file_path": download.file_path, "audio_format": "mp3"}
+    assert log.detail == {"file_path": download.file_path, "audio_format": "opus"}
 
 
 def test_upload_measures_the_track(api: APIClient, fake_media: dict[str, Any]) -> None:
