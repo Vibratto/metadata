@@ -5,7 +5,7 @@ import type { components } from '../../api/schema'
 type Preference = components['schemas']['Preference']
 
 const preferences: Preference[] = [
-  { key: 'download.format', value: 'mp3', default: 'mp3' },
+  { key: 'download.format', value: 'opus', default: 'opus' },
   { key: 'download.folder', value: 'music', default: 'music' },
   {
     key: 'download.name_template',

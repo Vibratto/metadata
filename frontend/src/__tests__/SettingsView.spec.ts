@@ -23,7 +23,7 @@ const field = (wrapper: Awaited<ReturnType<typeof mountView>>['wrapper'], label:
 describe('SettingsView', () => {
   it('loads the settings and links to the account', async () => {
     const { wrapper } = await mountView(SettingsView, '/settings')
-    expect(chosen(wrapper, 'Download format')).toBe('mp3')
+    expect(chosen(wrapper, 'Download format')).toBe('opus')
     expect((field(wrapper, 'Download folder').element as HTMLInputElement).value).toBe('music')
     expect(wrapper.text()).toContain('{albumartist} {artist} {album} {disc} {track} {title} {year}')
     expect(wrapper.text()).toContain('{album} in the folders')
@@ -83,7 +83,7 @@ describe('SettingsView', () => {
     )
     const { wrapper } = await mountView(SettingsView, '/settings')
     await fill(wrapper, 'Naming template', '{nothing}')
-    await choose(wrapper, 'Download format', 'opus')
+    await choose(wrapper, 'Download format', 'mp3')
     await fill(wrapper, 'Download folder', 'songs')
     await wrapper.get('form').trigger('submit')
     await flushPromises()

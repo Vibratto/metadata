@@ -18,7 +18,7 @@ const KEYS = ['download.format', 'download.folder', 'download.name_template', TH
 type Key = (typeof KEYS)[number]
 
 // Same as `integrations.audio.FORMATS`: the API only validates the type, not the value.
-const FORMATS = ['mp3', 'm4a', 'flac', 'opus']
+const FORMATS = ['opus', 'mp3', 'm4a', 'flac']
 // Placeholders of `integrations.audio.render_path`; passed as a parameter because
 // vue-i18n would read the braces in the text as interpolations.
 const PLACEHOLDERS = '{albumartist} {artist} {album} {disc} {track} {title} {year}'
