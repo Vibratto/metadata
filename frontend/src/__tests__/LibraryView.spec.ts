@@ -306,11 +306,57 @@ describe('LibraryView', () => {
     expect(cards[0]!.text()).not.toContain('pending')
   })
 
-  it('suggests importing the discography only for the big related artists', async () => {
+  it('every related artist can be imported, and the big ones are marked as suggested', async () => {
     const { wrapper } = await mount('/library?tab=related')
     const cards = wrapper.findAll('.covers li')
-    expect(cards[0]!.get('button').text()).toBe('Import discography')
-    expect(cards[1]!.find('button').exists()).toBe(false)
+    expect(cards.map((c) => c.get('button').text())).toEqual([
+      'Import discography',
+      'Import discography',
+    ])
+    expect(cards.map((c) => c.find('.chip').exists())).toEqual([true, false])
+    expect(cards[0]!.get('.chip').text()).toBe('Suggested')
+    expect(cards[0]!.get('button').classes()).toContain('btn--primary')
+    expect(cards[1]!.get('button').classes()).toContain('btn--secondary')
+  })
+
+  it('asks before importing and does nothing when the dialog is closed', async () => {
+    let posts = 0
+    server.use(http.post('/api/v1/jobs/runs/', () => (posts++, HttpResponse.json({}))))
+    const { wrapper } = await mount('/library?tab=related')
+    expect(wrapper.find('dialog[open]').exists()).toBe(false)
+    await wrapper.get('.covers li button').trigger('click')
+    const dialog = wrapper.get('dialog[open]')
+    expect(dialog.get('h2').text()).toBe('Import discography')
+    expect(dialog.text()).toContain('Import every album, single and track of Justice?')
+    await button(wrapper, 'Close').trigger('click')
+    await settle()
+    expect(wrapper.find('dialog[open]').exists()).toBe(false)
+    expect(posts).toBe(0)
+  })
+
+  it('artists already in the library can have their discography updated', async () => {
+    let body: unknown
+    server.use(
+      http.post('/api/v1/jobs/runs/', async ({ request }) => {
+        body = await request.json()
+        return HttpResponse.json({ id: 6, kind: 'import', status: 'succeeded' }, { status: 201 })
+      }),
+    )
+    const { wrapper } = await mount('/library?tab=artists')
+    const card = wrapper.findAll('.covers li')[0]!
+    expect(card.get('button').text()).toBe('Update discography')
+    expect(card.find('.chip').exists()).toBe(false)
+    await card.get('button').trigger('click')
+    const dialog = wrapper.get('dialog[open]')
+    expect(dialog.text()).toContain('Look for new releases of Daft Punk')
+    await dialog.get('.btn--primary').trigger('click')
+    await vi.waitFor(() =>
+      expect(body).toEqual({
+        kind: 'import',
+        params: { artist_ids: ['UCdaftpunk0000000000000a'] },
+      }),
+    )
+    expect(wrapper.find('dialog[open]').exists()).toBe(false)
   })
 
   it('imports a related artist and reloads the list when the job ends', async () => {
@@ -328,7 +374,8 @@ describe('LibraryView', () => {
     )
     const seen = spy('artists')
     const { wrapper } = await mount('/library?tab=related')
-    await button(wrapper, 'Import discography').trigger('click')
+    await wrapper.get('.covers li button').trigger('click')
+    await wrapper.get('dialog[open] .btn--primary').trigger('click')
     await vi.waitFor(() => expect(wrapper.get('.job__status').text()).toContain('Finished'))
     expect(body).toEqual({ kind: 'import', params: { artist_ids: ['UCjustice00000000000000b'] } })
     await vi.waitFor(() => expect(seen).toHaveLength(2))

@@ -78,7 +78,9 @@
       "find": "Buscar",
       "add": "Añadir",
       "save": "Guardar artistas",
-      "done": "Artistas actualizados."
+      "done": "Artistas actualizados.",
+      "update": "Actualizar discografía",
+      "confirm": "¿Buscar los lanzamientos nuevos de {name} y añadirlos a la biblioteca?"
     },
     "history": {
       "title": "Historial",
@@ -156,7 +158,9 @@
     "also_on": "En otro álbum | En otros {n} álbumes",
     "related": {
       "intro": "Artistas relacionados con los que has importado. Solo se guarda su perfil; importa la discografía de los que quieras.",
-      "import": "Importar discografía"
+      "import": "Importar discografía",
+      "confirm": "¿Importar todos los álbumes, sencillos y canciones de {name}? Puede tardar unos minutos.",
+      "suggested": "Sugerido"
     }
   }
 }

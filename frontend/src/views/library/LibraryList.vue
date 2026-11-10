@@ -6,6 +6,7 @@ import AppIcon from '../../components/AppIcon.vue'
 import ActiveFilters, { type ActiveFilter } from '../../components/ActiveFilters.vue'
 import BaseAlert from '../../components/BaseAlert.vue'
 import BaseButton from '../../components/BaseButton.vue'
+import BaseDialog from '../../components/BaseDialog.vue'
 import BaseField from '../../components/BaseField.vue'
 import BaseSelect, { type SelectOption } from '../../components/BaseSelect.vue'
 import CoverArt from '../../components/CoverArt.vue'
@@ -46,13 +47,17 @@ const fixedQuery = (query: Record<string, string>): Record<string, string> => ({
 })
 const list = usePagedList<Item>(apiPath(kind), spec.filters, fixedQuery)
 
-// A related artist's discography is imported from its card; the list reloads when it is
-// done, because the artist then leaves this tab for the Artists one.
+// An artist's discography is imported from its card, after confirming. The list reloads
+// when it is done: a related artist then leaves its tab for the Artists one.
 const importJob = useJobRun()
-const importing = ref<number | null>(null)
-async function importDiscography(artist: Artist): Promise<void> {
-  importing.value = artist.id
-  await importJob.start('import', { artist_ids: [artist.ytmusic_id] })
+const asking = ref<Artist | null>(null)
+const importLabel = computed(() =>
+  t(props.tab === 'related' ? 'library.related.import' : 'library.artists.update'),
+)
+async function confirmImport(): Promise<void> {
+  const artist = asking.value
+  asking.value = null
+  if (artist) await importJob.start('import', { artist_ids: [artist.ytmusic_id] })
 }
 watch(
   () => importJob.active,
@@ -145,8 +150,7 @@ const artistLink = (credit: Credit) => ({
 })
 const year = (row: Item) => ('year' in row ? (row.year ?? '') : '')
 const audience = (row: Item) => ('subscribers' in row ? audienceText(row, locale.value, t) : '')
-const suggested = (row: Item): Artist | null =>
-  'suggest_import' in row && row.suggest_import ? row : null
+const suggested = (row: Item): boolean => 'suggest_import' in row && row.suggest_import
 /** Track and pending counts, when the API sends them. */
 const counts = (row: Item): string => {
   const r = row as { track_count?: number; pending_count?: number }
@@ -218,7 +222,7 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
     <ActiveFilters :filters="active" @remove="removeFilter" @clear="clearFilters" />
 
     <p v-if="tab === 'related'" class="library-list__intro">{{ t('library.related.intro') }}</p>
-    <JobRunPanel v-if="importing !== null" :job="importJob" />
+    <JobRunPanel v-if="kind === 'artists'" :job="importJob" />
     <BaseAlert v-if="list.error" variant="error">{{ list.error }}</BaseAlert>
     <p v-if="list.loading" role="status">{{ t('library.loading') }}</p>
     <template v-if="kind !== 'tracks'">
@@ -242,14 +246,16 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
             <template v-if="counts(row)"> · {{ counts(row) }}</template>
           </small>
           <small v-if="audience(row)">{{ audience(row) }}</small>
-          <BaseButton
-            v-if="tab === 'related' && suggested(row)"
-            variant="secondary"
-            :disabled="importJob.active"
-            @click="importDiscography(suggested(row)!)"
-          >
-            {{ t('library.related.import') }}
-          </BaseButton>
+          <template v-if="kind === 'artists'">
+            <span v-if="suggested(row)" class="chip">{{ t('library.related.suggested') }}</span>
+            <BaseButton
+              :variant="suggested(row) ? 'primary' : 'secondary'"
+              :disabled="importJob.active"
+              @click="asking = row as Artist"
+            >
+              {{ importLabel }}
+            </BaseButton>
+          </template>
         </li>
       </ul>
     </template>
@@ -294,6 +300,21 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
     </ResponsiveList>
 
     <VideoPreviewDialog :preview="preview" @close="closePreview" />
+
+    <BaseDialog
+      :model-value="asking !== null"
+      :title="importLabel"
+      @update:model-value="asking = null"
+    >
+      <p>
+        {{
+          t(tab === 'related' ? 'library.related.confirm' : 'library.artists.confirm', {
+            name: asking?.name,
+          })
+        }}
+      </p>
+      <BaseButton @click="confirmImport">{{ importLabel }}</BaseButton>
+    </BaseDialog>
 
     <nav
       v-if="list.hasPrevious || list.hasNext"
@@ -400,6 +421,13 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
   font-size: 0.8125rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* Above the card's stretched link, so they can be clicked. */
+.covers .btn,
+.covers .chip {
+  position: relative;
+  align-self: flex-start;
+  margin-top: var(--space-2);
 }
 .covers .covers__artist {
   position: relative;
