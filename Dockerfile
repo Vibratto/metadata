@@ -1,6 +1,6 @@
 # Builds the web interface. Its output is the same for every architecture, so it always
 # runs natively.
-FROM --platform=$BUILDPLATFORM node:22-slim AS frontend
+FROM --platform=$BUILDPLATFORM node:26-slim AS frontend
 WORKDIR /src
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
