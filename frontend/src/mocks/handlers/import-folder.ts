@@ -30,11 +30,6 @@ const finished: JobRun = {
   },
 }
 
-const lines = [
-  { position: 1, level: 'info', message: 'Daft Punk/one.mp3 → “One More Time”' },
-  { position: 2, level: 'warning', message: 'Daft Punk/demo.mp3: no_tags' },
-].map((l) => ({ ...l, created_at: '2026-01-01T10:00:10Z' }))
-
 /**
  * Folder import: the `folder_import` job finishes at once with a sample summary. Every other
  * job stays in `jobs.ts` (this file loads first and lets the request through by not answering).
@@ -45,9 +40,4 @@ export default [
     if (kind === 'folder_import') return HttpResponse.json(finished, { status: 201 })
   }),
   http.get(`/api/v1/jobs/runs/${ID}/`, () => HttpResponse.json(finished)),
-  // Honours `after`: once the job is closed the panel asks for lines until it gets none.
-  http.get(`/api/v1/jobs/runs/${ID}/lines/`, ({ request }) => {
-    const after = Number(new URL(request.url).searchParams.get('after'))
-    return HttpResponse.json(lines.filter((l) => l.position > after))
-  }),
 ]

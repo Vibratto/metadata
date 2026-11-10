@@ -172,40 +172,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/activity/logs/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Technical logs stored in the database, administrators only. */
-        get: operations["v1_activity_logs_list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/activity/logs/{id}/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Technical logs stored in the database, administrators only. */
-        get: operations["v1_activity_logs_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/catalog/albums/": {
         parameters: {
             query?: never;
@@ -816,23 +782,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/jobs/runs/{id}/lines/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Log lines after position ``after`` (default: from the start). */
-        get: operations["v1_jobs_runs_lines_list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/jobs/runs/{id}/stop/": {
         parameters: {
             query?: never;
@@ -1231,24 +1180,6 @@ export interface components {
             readonly current: string;
             readonly summary: unknown;
         };
-        /** @description One log line of a run. */
-        JobRunLine: {
-            readonly position: number;
-            readonly level: components["schemas"]["JobRunLineLevelEnum"];
-            readonly message: string;
-            /**
-             * Date
-             * Format: date-time
-             */
-            readonly created_at: string;
-        };
-        /**
-         * @description * `info` - information
-         *     * `warning` - warning
-         *     * `error` - error
-         * @enum {string}
-         */
-        JobRunLineLevelEnum: "info" | "warning" | "error";
         /**
          * @description * `pending` - pending
          *     * `running` - running
@@ -1387,21 +1318,6 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["HistoryEntry"][];
         };
-        PaginatedJobRunLineList: {
-            /** @example 123 */
-            count: number;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=4
-             */
-            next?: string | null;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=2
-             */
-            previous?: string | null;
-            results: components["schemas"]["JobRunLine"][];
-        };
         PaginatedJobRunList: {
             /** @example 123 */
             count: number;
@@ -1431,21 +1347,6 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["Recording"][];
-        };
-        PaginatedTechnicalLogList: {
-            /** @example 123 */
-            count: number;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=4
-             */
-            next?: string | null;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=2
-             */
-            previous?: string | null;
-            results: components["schemas"]["TechnicalLog"][];
         };
         PaginatedTrackList: {
             /** @example 123 */
@@ -1664,26 +1565,6 @@ export interface components {
             /** @description Creating it needs the setup code. */
             code_required: boolean;
         };
-        /** @description One technical log line in the database. */
-        TechnicalLog: {
-            readonly id: number;
-            /** Format: date-time */
-            readonly created_at: string;
-            readonly level: components["schemas"]["TechnicalLogLevelEnum"];
-            readonly logger_name: string;
-            readonly msg: string;
-            readonly trace: string | null;
-        };
-        /**
-         * @description * `0` - NotSet
-         *     * `20` - Info
-         *     * `30` - Warning
-         *     * `10` - Debug
-         *     * `40` - Error
-         *     * `50` - Fatal
-         * @enum {integer}
-         */
-        TechnicalLogLevelEnum: 0 | 20 | 30 | 10 | 40 | 50;
         Track: {
             readonly id: number;
             readonly album: number;
@@ -2095,58 +1976,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ActivityLog"];
-                };
-            };
-        };
-    };
-    v1_activity_logs_list: {
-        parameters: {
-            query?: {
-                date_from?: string;
-                date_to?: string;
-                min_level?: number;
-                module?: string;
-                /** @description A page number within the paginated result set. */
-                page?: number;
-                /** @description Number of results to return per page. */
-                page_size?: number;
-                search?: string;
-                task?: unknown;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedTechnicalLogList"];
-                };
-            };
-        };
-    };
-    v1_activity_logs_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this Logging. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TechnicalLog"];
                 };
             };
         };
@@ -3370,46 +3199,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["JobRun"];
-                };
-            };
-        };
-    };
-    v1_jobs_runs_lines_list: {
-        parameters: {
-            query?: {
-                /** @description Last position already received. */
-                after?: number;
-                kind?: string;
-                /** @description A page number within the paginated result set. */
-                page?: number;
-                started_after?: string;
-                started_before?: string;
-                /**
-                 * @description * `pending` - pending
-                 *     * `running` - running
-                 *     * `stopping` - stopping
-                 *     * `stopped` - stopped
-                 *     * `succeeded` - succeeded
-                 *     * `failed` - failed
-                 *     * `interrupted` - interrupted
-                 */
-                status?: "failed" | "interrupted" | "pending" | "running" | "stopped" | "stopping" | "succeeded";
-            };
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this job run. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedJobRunLineList"];
                 };
             };
         };

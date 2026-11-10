@@ -36,8 +36,6 @@ export default [
   http.get('/api/v1/jobs/runs/:id/', ({ params }) =>
     HttpResponse.json(jobs.find((j) => j.id === Number(params.id)) ?? run({ id: 3 })),
   ),
-  // `lines/` returns an unpaginated list, even though the schema describes it as paginated.
-  http.get('/api/v1/jobs/runs/:id/lines/', () => HttpResponse.json([])),
   http.post('/api/v1/jobs/runs/:id/stop/', ({ params }) =>
     HttpResponse.json(run({ id: Number(params.id), status: 'stopping' })),
   ),

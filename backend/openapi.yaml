@@ -280,81 +280,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ActivityLog'
           description: ''
-  /api/v1/activity/logs/:
-    get:
-      operationId: v1_activity_logs_list
-      description: Technical logs stored in the database, administrators only.
-      parameters:
-      - in: query
-        name: date_from
-        schema:
-          type: string
-          format: date
-      - in: query
-        name: date_to
-        schema:
-          type: string
-          format: date
-      - in: query
-        name: min_level
-        schema:
-          type: integer
-      - in: query
-        name: module
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
-      - in: query
-        name: search
-        schema:
-          type: string
-      - in: query
-        name: task
-        schema: {}
-      tags:
-      - v1
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedTechnicalLogList'
-          description: ''
-  /api/v1/activity/logs/{id}/:
-    get:
-      operationId: v1_activity_logs_retrieve
-      description: Technical logs stored in the database, administrators only.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this Logging.
-        required: true
-      tags:
-      - v1
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TechnicalLog'
-          description: ''
   /api/v1/catalog/albums/:
     get:
       operationId: v1_catalog_albums_list
@@ -2049,73 +1974,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/JobRun'
           description: ''
-  /api/v1/jobs/runs/{id}/lines/:
-    get:
-      operationId: v1_jobs_runs_lines_list
-      description: 'Log lines after position ``after`` (default: from the start).'
-      parameters:
-      - in: query
-        name: after
-        schema:
-          type: integer
-        description: Last position already received.
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this job run.
-        required: true
-      - in: query
-        name: kind
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - in: query
-        name: started_after
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: started_before
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: status
-        schema:
-          type: string
-          enum:
-          - failed
-          - interrupted
-          - pending
-          - running
-          - stopped
-          - stopping
-          - succeeded
-        description: |-
-          * `pending` - pending
-          * `running` - running
-          * `stopping` - stopping
-          * `stopped` - stopped
-          * `succeeded` - succeeded
-          * `failed` - failed
-          * `interrupted` - interrupted
-      tags:
-      - jobs
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedJobRunLineList'
-          description: ''
   /api/v1/jobs/runs/{id}/stop/:
     post:
       operationId: v1_jobs_runs_stop_create
@@ -3186,40 +3044,6 @@ components:
       - summary
       - total
       - user
-    JobRunLine:
-      type: object
-      description: One log line of a run.
-      properties:
-        position:
-          type: integer
-          readOnly: true
-        level:
-          allOf:
-          - $ref: '#/components/schemas/JobRunLineLevelEnum'
-          readOnly: true
-        message:
-          type: string
-          readOnly: true
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-          title: Date
-      required:
-      - created_at
-      - level
-      - message
-      - position
-    JobRunLineLevelEnum:
-      enum:
-      - info
-      - warning
-      - error
-      type: string
-      description: |-
-        * `info` - information
-        * `warning` - warning
-        * `error` - error
     JobRunStatusEnum:
       enum:
       - pending
@@ -3458,29 +3282,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/HistoryEntry'
-    PaginatedJobRunLineList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/JobRunLine'
     PaginatedJobRunList:
       type: object
       required:
@@ -3527,29 +3328,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Recording'
-    PaginatedTechnicalLogList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/TechnicalLog'
     PaginatedTrackList:
       type: object
       required:
@@ -4002,54 +3780,6 @@ components:
       required:
       - code_required
       - needed
-    TechnicalLog:
-      type: object
-      description: One technical log line in the database.
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        level:
-          allOf:
-          - $ref: '#/components/schemas/TechnicalLogLevelEnum'
-          readOnly: true
-        logger_name:
-          type: string
-          readOnly: true
-        msg:
-          type: string
-          readOnly: true
-        trace:
-          type: string
-          readOnly: true
-          nullable: true
-      required:
-      - created_at
-      - id
-      - level
-      - logger_name
-      - msg
-      - trace
-    TechnicalLogLevelEnum:
-      enum:
-      - 0
-      - 20
-      - 30
-      - 10
-      - 40
-      - 50
-      type: integer
-      description: |-
-        * `0` - NotSet
-        * `20` - Info
-        * `30` - Warning
-        * `10` - Debug
-        * `40` - Error
-        * `50` - Fatal
     Track:
       type: object
       properties:

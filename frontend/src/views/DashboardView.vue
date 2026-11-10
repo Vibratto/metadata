@@ -11,6 +11,7 @@ import BaseAlert from '../components/BaseAlert.vue'
 import ProgressBar from '../components/ProgressBar.vue'
 import { progressOf, useJobsStore } from '../stores/jobs'
 import { useSessionStore } from '../stores/session'
+import { activitySentence } from './log/sentence'
 
 type ActivityLog = components['schemas']['ActivityLog']
 
@@ -25,7 +26,8 @@ const RECENT = 5
  * Dashboard: greeting, library summary, running jobs, next step and recent activity. Jobs are
  * polled only while mounted.
  */
-const { t, te, locale } = useI18n()
+const i18n = useI18n()
+const { t, te, locale } = i18n
 const jobs = useJobsStore()
 const session = useSessionStore()
 
@@ -81,7 +83,7 @@ async function loadSummary(): Promise<void> {
   }
 }
 
-// Activity is an extra: if it fails the dashboard goes on without it (the Log reports it).
+// Activity is an extra: if it fails the dashboard goes on without it.
 async function loadRecent(): Promise<void> {
   try {
     const page = await api<{ results: ActivityLog[] }>('/api/v1/activity/entries/')
@@ -191,9 +193,8 @@ onUnmounted(() => clearInterval(timer))
           <li v-for="entry in recent" :key="entry.id">
             <span class="recent__icon" aria-hidden="true"><AppIcon name="history" /></span>
             <span class="recent__text">
-              <span class="mono">{{ entry.action }}</span>
+              <span class="recent__what">{{ activitySentence(entry, i18n) }}</span>
               <small>
-                {{ entry.username || t('log.system') }} ·
                 {{
                   new Date(entry.created_at).toLocaleString(locale, {
                     dateStyle: 'medium',
@@ -363,7 +364,7 @@ h2.card__head {
   flex-direction: column;
   min-width: 0;
 }
-.recent__text .mono {
+.recent__what {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

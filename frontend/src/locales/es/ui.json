@@ -10,7 +10,9 @@
     },
     "job": {
       "progress": "Progreso de la tarea",
-      "lines": "Registro de la tarea",
+      "current": "Ahora: {item}",
+      "problems": "No se ha podido completar ({count})",
+      "more": "…y {count} más",
       "stop": "Detener",
       "status": {
         "pending": "Pendiente",

@@ -1,80 +1,48 @@
 {
   "log": {
-    "nav": "Registro",
-    "title": "Registro",
-    "tabs": {
-      "label": "Secciones del registro",
-      "activity": "Actividad",
-      "jobs": "Tareas",
-      "technical": "Logs técnicos"
-    },
+    "nav": "Actividad",
+    "title": "Actividad",
     "filters": {
       "dateFrom": "Desde",
-      "dateTo": "Hasta",
-      "username": "Usuario",
-      "action": "Acción",
-      "objectType": "Tipo de objeto",
-      "kind": "Tipo de tarea",
-      "status": "Estado",
-      "level": "Nivel mínimo",
-      "module": "Módulo",
-      "task": "Número de tarea",
-      "search": "Buscar en el mensaje",
-      "any": "Todos"
+      "dateTo": "Hasta"
     },
     "columns": {
       "date": "Fecha",
-      "user": "Usuario",
-      "action": "Acción",
-      "object": "Objeto",
-      "id": "N.º",
-      "kind": "Tipo",
-      "status": "Estado",
-      "started": "Inicio",
-      "progress": "Progreso",
-      "level": "Nivel",
-      "module": "Módulo",
-      "message": "Mensaje"
+      "action": "Qué pasó",
+      "object": "Elemento"
     },
-    "objectType": {
-      "catalog": {
-        "artist": "Artista",
-        "album": "Álbum",
-        "track": "Canción"
-      },
-      "jobs": {
-        "jobrun": "Tarea"
-      },
-      "watches": {
-        "watch": "Búsqueda de novedades"
-      },
-      "proxies": {
-        "proxy": "Proxy"
-      },
-      "auth": {
-        "user": "Usuario"
-      }
+    "actions": {
+      "auth_login": "Iniciaste sesión",
+      "auth_login_failed": "Intento de inicio de sesión fallido",
+      "auth_logout": "Cerraste sesión",
+      "catalog_album_edited": "Editaste un álbum",
+      "catalog_artist_blocked": "Bloqueaste a un artista",
+      "catalog_blocked_added": "Añadiste algo a la lista de bloqueados",
+      "catalog_blocked_removed": "Quitaste algo de la lista de bloqueados",
+      "catalog_download_finished": "Descarga terminada. Pistas descargadas: {downloaded}",
+      "catalog_download_relocated": "Archivos movidos a su sitio: {count}",
+      "catalog_download_retagged": "Archivos con las etiquetas reescritas: {count}",
+      "catalog_folder_import": "Importaste una carpeta. Archivos enlazados: {linked}",
+      "catalog_import": "Importaste artistas",
+      "catalog_library_restore_started": "Restauraste una copia de seguridad de la biblioteca",
+      "catalog_recording_merged": "Uniste dos grabaciones",
+      "catalog_track_split": "Separaste una pista de su grabación",
+      "catalog_track_uploaded": "Subiste el audio de una pista",
+      "preferences_updated": "Cambiaste un ajuste",
+      "proxies_bulk_created": "Proxies añadidos: {created}",
+      "proxies_checked": "Comprobaste un proxy",
+      "proxies_created": "Añadiste un proxy",
+      "proxies_deleted": "Borraste un proxy",
+      "proxies_updated": "Cambiaste un proxy",
+      "watches_created": "Creaste una búsqueda de novedades",
+      "watches_deleted": "Borraste una búsqueda de novedades",
+      "watches_updated": "Cambiaste una búsqueda de novedades",
+      "watches_watch_checked": "Se buscaron novedades. Álbumes encontrados: {albums}",
+      "other": "Cambio en la biblioteca"
     },
-    "kind": {
-      "import": "Importación",
-      "download": "Descarga",
-      "maintenance": "Mantenimiento",
-      "watch_check": "Novedades"
-    },
-    "level": {
-      "10": "Depuración",
-      "20": "Información",
-      "30": "Aviso",
-      "40": "Error",
-      "50": "Crítico"
-    },
-    "system": "Sistema",
     "history": "Ver historial",
-    "trace": "Traza",
-    "detailTitle": "Tarea n.º {id}",
     "page": "Página {page} · {count} en total",
     "previous": "Anterior",
-    "next": "Siguiente",
-    "object": "{type} n.º {id}"
+    "next": "Siguiente"
   }
 }

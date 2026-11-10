@@ -370,7 +370,6 @@ describe('LibraryView', () => {
       http.get('/api/v1/jobs/runs/5/', () =>
         HttpResponse.json({ ...run, status: 'succeeded', done: 1 }),
       ),
-      http.get('/api/v1/jobs/runs/5/lines/', () => HttpResponse.json([])),
     )
     const seen = spy('artists')
     const { wrapper } = await mount('/library?tab=related')

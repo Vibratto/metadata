@@ -40,7 +40,6 @@ function serve(states: JobRun[]) {
     http.get('/api/v1/jobs/runs/8/', () =>
       HttpResponse.json(states[Math.min(detail++, states.length - 1)]),
     ),
-    http.get('/api/v1/jobs/runs/8/lines/', () => HttpResponse.json([])),
   )
   return bodies
 }

@@ -8,7 +8,8 @@ import { useJobsStore } from '../stores/jobs'
 const POLL_MS = 15000
 
 /**
- * Running-jobs indicator, visible from every view; links to the Log's jobs tab. Hidden when
+ * Running-jobs indicator, visible from every view; links to the dashboard, which lists
+ * them. Hidden when
  * there are none. A failed check just hides it: the views that need jobs show their own error.
  */
 const { t } = useI18n()
@@ -25,11 +26,7 @@ onUnmounted(() => clearInterval(timer))
 </script>
 
 <template>
-  <RouterLink
-    v-if="jobs.active.length"
-    class="jobs-indicator"
-    :to="{ name: 'log', query: { tab: 'jobs' } }"
-  >
+  <RouterLink v-if="jobs.active.length" class="jobs-indicator" :to="{ name: 'dashboard' }">
     <span class="jobs-indicator__pulse" aria-hidden="true"></span>
     <span class="jobs-indicator__text">{{
       t('jobsIndicator.count', { n: jobs.active.length }, jobs.active.length)

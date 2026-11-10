@@ -1,46 +1,82 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 
-import ActivityTab from './ActivityTab.vue'
-import JobsTab from './JobsTab.vue'
-import TechnicalTab from './TechnicalTab.vue'
+import type { components } from '../../api/schema'
+import BaseAlert from '../../components/BaseAlert.vue'
+import BaseField from '../../components/BaseField.vue'
+import FilterPanel from '../../components/FilterPanel.vue'
+import ResponsiveList from '../../components/ResponsiveList.vue'
+import { usePagedList } from '../../composables/usePagedList'
+import { bindFilter } from './filter'
+import LogPager from './LogPager.vue'
+import { activitySentence } from './sentence'
+
+type ActivityLog = components['schemas']['ActivityLog']
+
+/** Library tab where the history of each library type lives. */
+const LIBRARY_TABS: Record<string, string> = {
+  'catalog.artist': 'artists',
+  'catalog.album': 'albums',
+  'catalog.track': 'tracks',
+}
 
 /**
- * Log section with three tabs: activity, jobs and technical logs (administrators only).
- * The tab and its filters live in the URL.
+ * Activity: what was done in the application, newest first, told in plain sentences. The
+ * dates filtered by live in the URL.
  */
-const { t } = useI18n()
-const route = useRoute()
+const i18n = useI18n()
+const { t, locale } = i18n
+const router = useRouter()
+const list = usePagedList<ActivityLog>('/api/v1/activity/entries/', ['date_from', 'date_to'])
 
-const panels = { activity: ActivityTab, jobs: JobsTab, technical: TechnicalTab }
-type Tab = keyof typeof panels
-
-const tabs: Tab[] = ['activity', 'jobs', 'technical']
-// An unknown tab in the URL falls back to Activity instead of failing.
-const tab = computed<Tab>(() => {
-  const asked = route.query.tab as Tab
-  return tabs.includes(asked) ? asked : 'activity'
-})
+const columns = computed(() => [
+  { key: 'created_at', label: t('log.columns.date') },
+  { key: 'action', label: t('log.columns.action') },
+  { key: 'object', label: t('log.columns.object') },
+])
+// The Library is another view: until its route exists, no link is made.
+const hasLibrary = router.hasRoute('library')
 </script>
 
 <template>
   <section class="log">
     <h1>{{ t('log.title') }}</h1>
-    <nav class="tabs segmented" :aria-label="t('log.tabs.label')">
-      <!-- Only the query changes: RouterLink would mark them all active, so it is marked by hand. -->
-      <RouterLink
-        v-for="name in tabs"
-        :key="name"
-        :to="{ query: { tab: name } }"
-        :aria-current="name === tab ? 'page' : undefined"
-        replace
-      >
-        {{ t(`log.tabs.${name}`) }}
-      </RouterLink>
-    </nav>
-    <component :is="panels[tab]" :key="tab" />
+    <FilterPanel>
+      <div class="log-filters">
+        <BaseField
+          :label="t('log.filters.dateFrom')"
+          type="date"
+          v-bind="bindFilter(list, 'date_from')"
+        />
+        <BaseField
+          :label="t('log.filters.dateTo')"
+          type="date"
+          v-bind="bindFilter(list, 'date_to')"
+        />
+      </div>
+    </FilterPanel>
+    <BaseAlert v-if="list.error" variant="error">{{ list.error }}</BaseAlert>
+    <ResponsiveList :columns="columns" :rows="list.items" row-key="id">
+      <template #cell-created_at="{ row }">{{
+        new Date(row.created_at).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' })
+      }}</template>
+      <template #cell-action="{ row }">{{ activitySentence(row, i18n) }}</template>
+      <template #cell-object="{ row }">
+        <RouterLink
+          v-if="hasLibrary && LIBRARY_TABS[row.object_type]"
+          class="history"
+          :to="{
+            name: 'library',
+            query: { tab: LIBRARY_TABS[row.object_type], id: row.object_id, panel: 'history' },
+          }"
+        >
+          {{ t('log.history') }}
+        </RouterLink>
+      </template>
+    </ResponsiveList>
+    <LogPager :list="list" />
   </section>
 </template>
 
@@ -50,13 +86,14 @@ const tab = computed<Tab>(() => {
   flex-direction: column;
   gap: var(--space-3);
 }
-.tabs {
-  align-self: flex-start;
-  margin-bottom: var(--space-2);
+.log-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: var(--space-3);
 }
-@media (max-width: 599.98px) {
-  .tabs {
-    align-self: stretch;
-  }
+.history {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
 }
 </style>
