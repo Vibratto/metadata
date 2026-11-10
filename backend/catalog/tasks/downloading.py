@@ -1,6 +1,6 @@
 """``download`` job: downloads the catalogue's pending tracks."""
 
-import math
+import logging
 import time
 from typing import Any
 
@@ -13,31 +13,28 @@ from catalog.services import lyrics, replaygain
 from catalog.services.downloading import build_pool, download_track
 from catalog.services.importing import FETCH_ERRORS
 from catalog.services.library import absolute, download_folder
+from catalog.services.problems import report
+from core.errors import UserError
 from integrations.audio import FORMATS, AudioError
 from integrations.youtube import NoProxyAvailable, ProxyPool
 from jobs import registry, runner
-from jobs.models import JobRun, JobRunLine
+from jobs.models import JobRun
 from preferences.models import get_value
+
+logger = logging.getLogger(__name__)
 
 #: Seconds between checks for a stop request while waiting for a proxy.
 STOP_CHECK_SECONDS = 1.0
 
-INFO = JobRunLine.Level.INFO
-WARNING = JobRunLine.Level.WARNING
-ERROR = JobRunLine.Level.ERROR
 
-
-def _wait_for_proxy(run: JobRun, seconds: float) -> bool:
+def _wait_for_proxy(run: JobRun, track: Track, seconds: float) -> bool:
     """Wait for a proxy to come off its cool-down.
 
     Returns:
         ``False`` if a stop request arrived while waiting.
     """
-    runner.line(
-        run,
-        WARNING,
-        _("Every proxy is cooling down: retrying in %(seconds)d s.")
-        % {"seconds": math.ceil(seconds)},
+    runner.progress(
+        run, run.done, run.total, _("Waiting for a free proxy: %(title)s") % {"title": track.title}
     )
     waited = 0.0
     while waited < seconds:
@@ -53,14 +50,14 @@ def _pending(params: dict[str, Any]) -> list[Track]:
     """The tracks the params ask for, leaving out those already downloaded.
 
     Raises:
-        ValueError: Neither ``track_ids`` nor ``all_pending`` was given.
+        UserError: Neither ``track_ids`` nor ``all_pending`` was given.
     """
     tracks = Track.objects.filter(download__isnull=True)
     if params.get("all_pending"):
         return list(tracks.select_related("album", "recording"))
     if params.get("track_ids"):
         return list(tracks.filter(pk__in=params["track_ids"]).select_related("album", "recording"))
-    raise ValueError(_("Give either “track_ids” or “all_pending”."))
+    raise UserError(_("Give either “track_ids” or “all_pending”."))
 
 
 def _update_albums(run: JobRun, albums: list[Album]) -> None:
@@ -73,11 +70,7 @@ def _update_albums(run: JobRun, albums: list[Album]) -> None:
         try:
             replaygain.update_album(album)
         except (AudioError, OSError, mutagen.MutagenError) as error:
-            runner.line(
-                run,
-                WARNING,
-                _("ReplayGain of “%(title)s”: %(error)s") % {"title": album.title, "error": error},
-            )
+            report(run, album.title, error)
 
 
 def _download(run: JobRun, track: Track, pool: ProxyPool, **options: Any) -> Download | None:
@@ -92,7 +85,7 @@ def _download(run: JobRun, track: Track, pool: ProxyPool, **options: Any) -> Dow
         try:
             return download_track(track, pool, **options)
         except NoProxyAvailable as busy:
-            if not _wait_for_proxy(run, busy.retry_in):
+            if not _wait_for_proxy(run, track, busy.retry_in):
                 return None
 
 
@@ -111,7 +104,7 @@ def download(run: JobRun, params: dict[str, Any]) -> dict[str, Any]:
     """
     fmt = get_value("download.format")
     if fmt not in FORMATS:
-        raise ValueError(_("Unsupported download format: %(format)s") % {"format": fmt})
+        raise UserError(_("Unsupported download format: %(format)s") % {"format": fmt})
     folder = download_folder()
     template = get_value("download.name_template")
     tracks = _pending(params)
@@ -123,30 +116,26 @@ def download(run: JobRun, params: dict[str, Any]) -> dict[str, Any]:
     albums: dict[int, Album] = {}
     for index, track in enumerate(tracks):
         if runner.should_stop(run):
-            runner.line(run, WARNING, _("Stop requested."))
             break
         runner.progress(run, index, len(tracks), track.title)
         try:
             result = _download(run, track, pool, fmt=fmt, folder=folder, template=template)
         except Exception as error:  # noqa: BLE001  # one broken track must not stop the rest
             failed += 1
-            runner.line(run, ERROR, f"{track.title}: {error}")
+            report(run, track.title, error)
             continue
         if result is None:
-            runner.line(run, WARNING, _("Stop requested."))
             break
         downloaded += 1
         albums.setdefault(track.album_id, track.album)
-        runner.line(run, INFO, f"{track.title} → {result.file_path}")
         if finder is not None:
             try:
                 lyrics.save_lyrics(track, absolute(result.file_path), finder)
             except (*FETCH_ERRORS, OSError) as error:
                 # Lyrics are an extra: failing to get them never fails the download.
-                runner.line(
-                    run,
-                    WARNING,
-                    _("%(title)s: no lyrics: %(error)s") % {"title": track.title, "error": error},
+                logger.warning("No lyrics for %s: %s", track.title, error)
+                runner.problem(
+                    run, track.title, _("Downloaded, but its lyrics could not be fetched.")
                 )
     else:
         runner.progress(run, len(tracks), len(tracks))

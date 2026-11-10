@@ -326,7 +326,6 @@ def test_files_that_cannot_be_linked_are_reported_with_the_reason(
     assert reasons["broken.mp3"] in {"unreadable", "no_tags"}
     assert "notes.txt" not in reasons
     assert importer.linked == 0 and not Album.objects.exists()
-    assert importer.run.lines.filter(level="warning").count() == 3
 
 
 def test_lookup_failure_is_reported_and_the_rest_goes_on(
@@ -336,7 +335,6 @@ def test_lookup_failure_is_reported_and_the_rest_goes_on(
     ytmusic.albums.clear()
     importer = _import(ytmusic, root)
     assert _reasons(importer) == {"a.mp3": "error"}
-    assert "get_album failed" in importer.run.lines.get(level="warning").message
 
 
 def test_search_failure_is_reported(mp3: Path, root: Path, ytmusic: FakeYTMusic) -> None:

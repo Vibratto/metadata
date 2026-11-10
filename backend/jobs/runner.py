@@ -12,18 +12,24 @@ from typing import Any
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import connection, transaction
-from django.db.models import Max
-from django.utils import timezone
+from django.utils import timezone, translation
+from django.utils.translation import gettext as _
 
-from activity.logs import current_job_id, redact
+from accounts.models import language_of
+from activity.logs import current_job_id
+from core.errors import UserError
 from jobs import registry
-from jobs.models import JobRun, JobRunLine
+from jobs.models import JobRun
 
 logger = logging.getLogger(__name__)
 
 _pool: ThreadPoolExecutor | None = None
 # Serializes "check no run of this kind is active" and "create the run".
 _start_lock = threading.Lock()
+# What each active run could not do, kept in memory until the run closes.
+_problems: dict[int, list[dict[str, str]]] = {}
+#: Problems kept in a summary; the rest are only counted.
+MAX_PROBLEMS = 50
 
 
 class JobAlreadyRunning(Exception):
@@ -81,11 +87,12 @@ def stop(run_id: int) -> JobRun:
     now = timezone.now()
     runs = JobRun.objects.filter(pk=run_id)
     # ``update`` rather than ``save``: atomic, and never overwrites the thread's progress.
-    if runs.filter(status=JobRun.Status.PENDING).update(
+    stopped_in_queue = runs.filter(status=JobRun.Status.PENDING).update(
         status=JobRun.Status.STOPPED, finished_at=now
+    )
+    if not stopped_in_queue and not runs.filter(status=JobRun.Status.RUNNING).update(
+        status=JobRun.Status.STOPPING
     ):
-        line(runs.get(), JobRunLine.Level.INFO, "Stopped before it started.")
-    elif not runs.filter(status=JobRun.Status.RUNNING).update(status=JobRun.Status.STOPPING):
         run = runs.get()
         if run.is_closed:
             raise JobClosed(run_id)
@@ -103,16 +110,31 @@ def progress(run: JobRun, done: int, total: int, current: str = "") -> None:
     run.save(update_fields=["done", "total", "current"])
 
 
-def line(run: JobRun, level: str, message: str) -> JobRunLine:
-    """Appends a line to the run's log."""
-    last = JobRunLine.objects.filter(run=run).aggregate(last=Max("position"))["last"] or 0
-    return JobRunLine.objects.create(
-        run=run, position=last + 1, level=level, message=redact(message)
-    )
+def problem(run: JobRun, item: str, reason: str) -> None:
+    """Notes something the run could not do, to show it when the run closes.
+
+    Args:
+        run: Current run.
+        item: What it was working on (a track, an album, a file), as the user knows it.
+        reason: One sentence for the user, already translated. Never an exception text.
+    """
+    _problems.setdefault(run.pk, []).append({"item": item[:255], "reason": reason})
+
+
+def _take_problems(run_id: int) -> dict[str, Any]:
+    """The noted problems as summary keys; nothing when there were none."""
+    noted = _problems.pop(run_id, [])
+    if not noted:
+        return {}
+    kept: dict[str, Any] = {"problems": noted[:MAX_PROBLEMS]}
+    if len(noted) > MAX_PROBLEMS:
+        kept["problems_omitted"] = len(noted) - MAX_PROBLEMS
+    return kept
 
 
 def _finish(run: JobRun, status: str, summary: dict[str, Any]) -> None:
-    """Closes the run with its status and summary."""
+    """Closes the run with its status and its summary, problems included."""
+    summary = {**summary, **_take_problems(run.pk)}
     run.status, run.summary, run.finished_at = status, summary, timezone.now()
     run.current = ""
     run.save(update_fields=["status", "summary", "finished_at", "current"])
@@ -136,18 +158,25 @@ def _execute(run_id: int) -> None:
         if not updated:  # stopped while queued
             return
         run = JobRun.objects.get(pk=run_id)
-        try:
-            summary = registry.get(run.kind)(run, run.params) or {}
-            outcome = JobRun.Status.SUCCEEDED
-        except Exception as error:
-            # A failing task must not kill the thread: it is logged and closed as failed.
-            logger.exception("Job %s #%s failed", run.kind, run_id)
-            line(run, JobRunLine.Level.ERROR, str(error) or type(error).__name__)
-            summary, outcome = {}, JobRun.Status.FAILED
-        # Re-read: ``stop`` changes the status from outside the thread.
-        run.refresh_from_db(fields=["status"])
-        if outcome == JobRun.Status.SUCCEEDED and run.status == JobRun.Status.STOPPING:
-            outcome = JobRun.Status.STOPPED
-        _finish(run, outcome, summary)
+        # A thread has no request to take the language from: what the run tells the user
+        # is written in the language of whoever started it.
+        with translation.override(language_of(run.user)):
+            try:
+                summary = registry.get(run.kind)(run, run.params) or {}
+                outcome = JobRun.Status.SUCCEEDED
+            except UserError as error:
+                summary, outcome = {"error": str(error)}, JobRun.Status.FAILED
+            except Exception:
+                # A failing task must not kill the thread. The cause goes to the server
+                # log; the user gets a sentence, not an exception text.
+                logger.exception("Job %s #%s failed", run.kind, run_id)
+                summary = {"error": _("The task could not finish. Try again later.")}
+                outcome = JobRun.Status.FAILED
+            # Re-read: ``stop`` changes the status from outside the thread.
+            run.refresh_from_db(fields=["status"])
+            if outcome == JobRun.Status.SUCCEEDED and run.status == JobRun.Status.STOPPING:
+                outcome = JobRun.Status.STOPPED
+            _finish(run, outcome, summary)
     finally:
+        _problems.pop(run_id, None)
         current_job_id.reset(token)

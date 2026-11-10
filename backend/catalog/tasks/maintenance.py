@@ -28,6 +28,7 @@ from catalog.services.maintenance import (
     replaygain_albums,
     retag_downloads,
 )
+from core.errors import UserError
 from jobs import runner
 from jobs.models import JobRun
 from jobs.registry import register
@@ -48,15 +49,15 @@ def maintenance(run: JobRun, params: dict[str, Any]) -> dict[str, Any]:
     """Run the requested operations, always in the same order.
 
     Raises:
-        ValueError: ``operations`` is not a list of known operations, or it asks to
+        UserError: ``operations`` is not a list of known operations, or it asks to
             rewrite tags and relocate in the same run.
     """
     operations = params.get("operations", list(DEFAULT_OPERATIONS))
     if not isinstance(operations, list) or not all(op in OPERATIONS for op in operations):
-        raise ValueError(_("Unknown maintenance operation."))
+        raise UserError(_("Unknown maintenance operation."))
     # A file that is retagged and moved within one Navidrome scan becomes a new track.
     if RELOCATE in operations and any(op in TAG_WRITERS for op in operations):
-        raise ValueError(_("Tags cannot be rewritten and files relocated in the same run."))
+        raise UserError(_("Tags cannot be rewritten and files relocated in the same run."))
     summary: dict[str, Any] = {}
     for name in OPERATIONS:
         if name in operations and not runner.should_stop(run):

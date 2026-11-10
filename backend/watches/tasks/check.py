@@ -4,7 +4,7 @@ from datetime import timedelta
 from typing import Any
 
 from jobs import runner
-from jobs.models import JobRun, JobRunLine
+from jobs.models import JobRun
 from jobs.registry import register
 from jobs.scheduler import register_periodic
 from watches import services
@@ -28,12 +28,8 @@ def watch_check(run: JobRun, params: dict[str, Any]) -> dict[str, Any]:
         runner.progress(run, done, len(watches), watch.name)
         result = services.check_watch(watch, run)
         failed = result.status == WatchRun.Status.FAILED
-        runner.line(
-            run,
-            JobRunLine.Level.ERROR if failed else JobRunLine.Level.INFO,
-            f"{watch.name}: {result.found} new releases"
-            + (f" ({result.detail})" if result.detail else ""),
-        )
+        if result.detail:
+            runner.problem(run, watch.name, result.detail)
         summary["checked"] += 1
         summary["albums"] += result.found
         summary["failed"] += failed

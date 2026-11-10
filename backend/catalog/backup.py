@@ -32,6 +32,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from activity.services import log_activity
+from core.errors import UserError
 from core.serializers import DetailSerializer
 from jobs import runner
 from jobs.serializers import JobRunSerializer
@@ -61,7 +62,7 @@ PREVIEW_MODELS = {
 UPLOAD_PREFIX = "vibratto-restore-"
 
 
-class BackupError(ValueError):
+class BackupError(UserError):
     """The file is not a valid library backup."""
 
 

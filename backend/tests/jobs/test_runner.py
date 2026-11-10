@@ -8,9 +8,11 @@ import pytest
 from django.contrib.auth.models import User
 from django.test import override_settings
 
+from accounts.models import Profile
 from activity.logs import current_job_id
+from core.errors import UserError
 from jobs import registry, runner
-from jobs.models import JobRun, JobRunLine
+from jobs.models import JobRun
 
 pytestmark = pytest.mark.django_db
 
@@ -30,7 +32,6 @@ def test_successful_run_keeps_params_user_and_summary() -> None:
     def task(run: JobRun, params: dict[str, Any]) -> dict[str, Any]:
         seen["params"], seen["job_id"] = params, current_job_id.get()
         runner.progress(run, 1, 2, "uno")
-        runner.line(run, JobRunLine.Level.INFO, "hecho")
         return {"ok": 1}
 
     run = runner.start("demo", {"a": 1}, user)
@@ -40,7 +41,6 @@ def test_successful_run_keeps_params_user_and_summary() -> None:
     assert run.is_closed
     assert seen == {"params": {"a": 1}, "job_id": str(run.pk)}
     assert current_job_id.get() == "-"
-    assert list(run.lines.values_list("position", "message")) == [(1, "hecho")]
 
 
 def test_task_returning_nothing_has_empty_summary() -> None:
@@ -48,7 +48,7 @@ def test_task_returning_nothing_has_empty_summary() -> None:
     assert runner.start("demo", None, None).summary == {}
 
 
-def test_failing_task_is_closed_as_failed_with_an_error_line(
+def test_failing_task_is_closed_as_failed_without_showing_the_exception(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     @registry.register("demo")
@@ -58,17 +58,68 @@ def test_failing_task_is_closed_as_failed_with_an_error_line(
     with caplog.at_level(logging.ERROR):
         run = runner.start("demo", None, None)
     assert run.status == JobRun.Status.FAILED and run.is_closed
-    line = run.lines.get()
-    assert (line.level, line.message) == (JobRunLine.Level.ERROR, "it broke")
-    assert "Job demo" in caplog.text
+    assert run.summary == {"error": "The task could not finish. Try again later."}
+    assert "Job demo" in caplog.text and "it broke" in caplog.text
 
 
-def test_failing_task_without_message_uses_exception_name() -> None:
+def test_an_error_the_user_can_fix_is_shown_as_it_is() -> None:
+    @registry.register("demo")
     def task(run: JobRun, params: dict[str, Any]) -> None:
-        raise ValueError
+        raise UserError("Pick a folder.")
 
-    registry.register("demo")(task)
-    assert runner.start("demo", None, None).lines.get().message == "ValueError"
+    run = runner.start("demo", None, None)
+    assert run.status == JobRun.Status.FAILED
+    assert run.summary == {"error": "Pick a folder."}
+
+
+def test_problems_are_kept_in_the_summary() -> None:
+    @registry.register("demo")
+    def task(run: JobRun, params: dict[str, Any]) -> dict[str, Any]:
+        runner.problem(run, "Song", "The connection failed.")
+        return {"ok": 1}
+
+    run = runner.start("demo", None, None)
+    assert run.summary == {
+        "ok": 1,
+        "problems": [{"item": "Song", "reason": "The connection failed."}],
+    }
+    assert runner._problems == {}
+
+
+def test_only_the_first_problems_are_kept_and_the_rest_counted() -> None:
+    @registry.register("demo")
+    def task(run: JobRun, params: dict[str, Any]) -> None:
+        for number in range(runner.MAX_PROBLEMS + 3):
+            runner.problem(run, f"Song {number}", "The connection failed.")
+
+    summary = runner.start("demo", None, None).summary
+    assert len(summary["problems"]) == runner.MAX_PROBLEMS
+    assert summary["problems_omitted"] == 3
+
+
+def test_problems_of_a_failed_run_are_kept_too() -> None:
+    @registry.register("demo")
+    def task(run: JobRun, params: dict[str, Any]) -> None:
+        runner.problem(run, "Song", "The connection failed.")
+        raise RuntimeError("it broke")
+
+    summary = runner.start("demo", None, None).summary
+    assert summary["problems"] == [{"item": "Song", "reason": "The connection failed."}]
+    assert "error" in summary
+
+
+def test_a_run_speaks_the_language_of_who_started_it() -> None:
+    user = User.objects.create_user("ana")
+    Profile.objects.create(user=user, language="es")
+
+    @registry.register("demo")
+    def task(run: JobRun, params: dict[str, Any]) -> None:
+        raise RuntimeError("it broke")
+
+    assert runner.start("demo", None, user).summary["error"].startswith("La tarea")
+    assert runner.start("demo", None, None).summary["error"].startswith("La tarea")
+    Profile.objects.all().delete()
+    assert runner.start("demo", None, None).summary["error"].startswith("The task")
 
 
 def test_unknown_kind_creates_nothing() -> None:
@@ -123,7 +174,6 @@ def test_stop_pending_run_closes_it_and_the_queue_skips_it() -> None:
     run = JobRun.objects.create(kind="demo")
     stopped = runner.stop(run.pk)
     assert stopped.status == JobRun.Status.STOPPED and stopped.is_closed
-    assert stopped.lines.get().message == "Stopped before it started."
     runner._execute(run.pk)
     run.refresh_from_db()
     assert run.summary == {} and run.status == JobRun.Status.STOPPED
@@ -145,13 +195,6 @@ def test_stop_closed_run_raises() -> None:
     run = runner.start("demo", None, None)
     with pytest.raises(runner.JobClosed):
         runner.stop(run.pk)
-
-
-def test_line_positions_increase() -> None:
-    run = JobRun.objects.create(kind="demo")
-    for text in "abc":
-        runner.line(run, JobRunLine.Level.INFO, text)
-    assert list(run.lines.values_list("position", flat=True)) == [1, 2, 3]
 
 
 def test_progress_truncates_current_item() -> None:
@@ -180,13 +223,3 @@ def test_runs_in_a_worker_thread(monkeypatch: pytest.MonkeyPatch) -> None:
     run.refresh_from_db()
     assert run.status == JobRun.Status.SUCCEEDED
     assert run.summary["thread"].startswith("job")
-
-
-def test_job_lines_hide_secrets() -> None:
-    """Run lines are shown in the web interface, so they must never carry credentials."""
-    run = JobRun.objects.create(kind="demo")
-
-    saved = runner.line(run, JobRunLine.Level.ERROR, "fallo con http://bob:s3cr3t@h:1 token=abc")
-
-    assert "s3cr3t" not in saved.message
-    assert "abc" not in saved.message

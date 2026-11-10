@@ -5,7 +5,7 @@ from typing import Any
 from rest_framework import serializers
 
 from jobs import registry
-from jobs.models import JobRun, JobRunLine
+from jobs.models import JobRun
 
 
 class JobRunSerializer(serializers.ModelSerializer[JobRun]):
@@ -30,17 +30,6 @@ class JobRunSerializer(serializers.ModelSerializer[JobRun]):
             "current",
             "summary",
         ]
-        read_only_fields = fields
-
-
-class JobRunLineSerializer(serializers.ModelSerializer[JobRunLine]):
-    """One log line of a run."""
-
-    class Meta:
-        """Lines are immutable."""
-
-        model = JobRunLine
-        fields = ["position", "level", "message", "created_at"]
         read_only_fields = fields
 
 

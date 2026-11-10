@@ -6,6 +6,7 @@ are listed rather than removed. ``Download`` is append-only, so a moved file get
 row and each operation reads only the newest row of every track.
 """
 
+import logging
 import os
 from pathlib import Path
 from typing import Any, cast
@@ -30,12 +31,15 @@ from catalog.services.library import (
     place,
     store_artist_image,
 )
+from catalog.services.problems import report
 from catalog.services.tagging import tags_for
 from integrations.audio import AudioError, render_path, write_tags
 from integrations.ytmusic import YTMusicClient
 from jobs import runner
-from jobs.models import JobRun, JobRunLine
+from jobs.models import JobRun
 from preferences.models import get_value
+
+logger = logging.getLogger(__name__)
 
 RETAG = "retag"
 REPLAYGAIN = "replaygain"
@@ -59,12 +63,6 @@ OPERATIONS = (
 DEFAULT_OPERATIONS = (RETAG, REPLAYGAIN, CHECK_FILES, COMPLETE_ARTISTS, LYRICS)
 #: Operations that rewrite tags; they never run together with ``RELOCATE``.
 TAG_WRITERS = (RETAG, REPLAYGAIN)
-
-WARNING = JobRunLine.Level.WARNING
-
-
-def _warn(run: JobRun, message: str, **values: Any) -> None:
-    runner.line(run, WARNING, message % values)
 
 
 def _latest_downloads() -> list[Download]:
@@ -115,14 +113,14 @@ def retag_downloads(run: JobRun, fetch_cover: CoverFetcher = download_cover) -> 
         runner.progress(run, index, len(downloads), path.name)
         if not path.is_file():
             failed += 1
-            _warn(run, _("Missing file: %(path)s"), path=path)
+            runner.problem(run, path.name, _("The file is missing."))
             continue
         try:
             cover = _cover(download.track.album, covers, fetch_cover) if embed else None
             write_tags(path, tags_for(download.track, cover=cover))
         except (AudioError, OSError, mutagen.MutagenError, requests.RequestException) as error:
             failed += 1
-            _warn(run, _("Could not tag %(path)s: %(error)s"), path=path, error=error)
+            report(run, path.name, error)
         else:
             retagged += 1
             store_artist_image(download.track, folder, fetch_cover)
@@ -139,7 +137,7 @@ def replaygain_albums(run: JobRun) -> dict[str, Any]:
     """
     summary = {"albums": 0, "files": 0, "failed": 0}
     if not get_value("replaygain.enabled"):
-        _warn(run, _("ReplayGain is turned off in the settings."))
+        runner.problem(run, "ReplayGain", _("It is turned off in the settings."))
         return summary
     albums = list(Album.objects.filter(tracks__download__isnull=False).distinct().order_by("pk"))
     for index, album in enumerate(albums, start=1):
@@ -150,7 +148,7 @@ def replaygain_albums(run: JobRun) -> dict[str, Any]:
             files = replaygain.update_album(album, remeasure=True)
         except (AudioError, OSError, mutagen.MutagenError) as error:
             summary["failed"] += 1
-            _warn(run, _("ReplayGain of “%(title)s”: %(error)s"), title=album.title, error=error)
+            report(run, album.title, error)
         else:
             summary["albums"] += 1
             summary["files"] += files
@@ -205,7 +203,8 @@ def relocate_downloads(run: JobRun, fetch_cover: CoverFetcher = download_cover) 
             )
         except (KeyError, ValueError) as error:
             failed += 1
-            _warn(run, _("No path for %(path)s: %(error)s"), path=source, error=error)
+            logger.warning("No path for %s: %s", source, error)
+            runner.problem(run, source.name, _("The name template cannot name this file."))
             continue
         dest = folder / relative
         if dest == source:
@@ -213,22 +212,17 @@ def relocate_downloads(run: JobRun, fetch_cover: CoverFetcher = download_cover) 
             continue
         if not source.is_file():
             failed += 1
-            _warn(run, _("Missing file: %(path)s"), path=source)
+            runner.problem(run, source.name, _("The file is missing."))
             continue
         if dest.exists():
             failed += 1
-            _warn(
-                run,
-                _("Destination already exists: %(source)s -> %(dest)s"),
-                source=source,
-                dest=dest,
-            )
+            runner.problem(run, source.name, _("Another file already has the name it should take."))
             continue
         try:
             _relocate(download, source, dest, fetch_cover)
         except OSError as error:
             failed += 1
-            _warn(run, _("Could not move %(path)s: %(error)s"), path=source, error=error)
+            report(run, source.name, error)
             continue
         new = Download.objects.create(
             track=track,
@@ -264,12 +258,7 @@ def check_download_files(run: JobRun) -> dict[str, Any]:
         runner.progress(run, checked, len(downloads), path.name)
         if not path.is_file():
             missing.append(download.pk)
-            _warn(
-                run,
-                _("The file of download #%(id)d is missing: %(path)s"),
-                id=download.pk,
-                path=download.file_path,
-            )
+            runner.problem(run, path.name, _("The file is missing."))
     return {"checked": checked, "missing": missing}
 
 
@@ -294,9 +283,7 @@ def complete_albums(run: JobRun, client: YTMusicClient | None = None) -> dict[st
             importer.complete_album(album)
         except FETCH_ERRORS as error:
             errors += 1
-            _warn(
-                run, _("Could not complete “%(title)s”: %(error)s"), title=album.title, error=error
-            )
+            report(run, album.title, error)
     return {
         "albums": checked,
         "tracks": importer.counts["tracks"],
@@ -331,7 +318,7 @@ def complete_artists(run: JobRun, client: YTMusicClient | None = None) -> dict[s
             importer.complete_artist(artist)
         except FETCH_ERRORS as error:
             errors += 1
-            _warn(run, _("Could not complete “%(name)s”: %(error)s"), name=artist.name, error=error)
+            report(run, artist.name, error)
             continue
         if (artist.image_url, artist.audience) == before:
             unchanged += 1
@@ -368,7 +355,7 @@ def fetch_missing_lyrics(run: JobRun) -> dict[str, Any]:
             saved = lyrics.save_lyrics(track, path, finder)
         except (*FETCH_ERRORS, OSError) as error:
             failed += 1
-            _warn(run, _("Lyrics of “%(title)s”: %(error)s"), title=track.title, error=error)
+            report(run, track.title, error)
             continue
         if saved:
             found += 1

@@ -1,18 +1,13 @@
-"""Activity and log-maintenance services."""
+"""Activity services."""
 
-from datetime import timedelta
 from typing import Any
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Model
-from django.utils import timezone
-from django_db_logger.models import StatusLog
 
 from activity.logs import redact
 from activity.models import ActivityLog
-
-TECHNICAL_LOG_RETENTION_DAYS = 30
 
 
 def log_activity(
@@ -42,19 +37,3 @@ def log_activity(
         object_id=str(obj.pk) if obj else "",
         detail=redact(detail or {}),
     )
-
-
-def purge_technical_logs(days: int = TECHNICAL_LOG_RETENTION_DAYS) -> int:
-    """Deletes technical logs older than ``days`` days. Only ``StatusLog`` is
-    touched: ``ActivityLog`` is never purged.
-
-    Args:
-        days: Maximum age kept.
-
-    Returns:
-        Number of rows deleted.
-    """
-    cutoff = timezone.now() - timedelta(days=days)
-    deleted: int
-    deleted, _ = StatusLog.objects.filter(create_datetime__lt=cutoff).delete()
-    return deleted

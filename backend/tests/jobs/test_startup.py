@@ -28,7 +28,6 @@ def test_mark_interrupted_closes_leftovers_only() -> None:
     for run in left:
         run.refresh_from_db()
         assert run.status == JobRun.Status.INTERRUPTED and run.is_closed
-        assert run.lines.get().level == "warning"
     done.refresh_from_db()
     assert done.status == JobRun.Status.SUCCEEDED
     assert startup.mark_interrupted() == 0

@@ -6,11 +6,9 @@ it when it finishes, whatever the outcome.
 
 from typing import Any
 
-from django.utils.translation import gettext as _
-
 from catalog.backup import parse_backup, restore, upload_path
 from jobs import runner
-from jobs.models import JobRun, JobRunLine
+from jobs.models import JobRun
 from jobs.registry import register
 
 
@@ -27,9 +25,4 @@ def library_restore(run: JobRun, params: dict[str, Any]) -> dict[str, Any]:
     finally:
         path.unlink(missing_ok=True)
     runner.progress(run, 1, 1)
-    runner.line(
-        run,
-        JobRunLine.Level.INFO,
-        _("%(created)d items added, %(skipped)d already existed.") % summary,
-    )
     return summary

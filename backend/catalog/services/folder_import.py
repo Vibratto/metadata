@@ -10,6 +10,7 @@ A file is linked only when the match is certain. Anything doubtful is reported w
 reason and left for the user to review.
 """
 
+import logging
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -22,13 +23,16 @@ from mutagen.easymp4 import EasyMP4Tags
 
 from catalog.models import Download, Track
 from catalog.services.importing import FETCH_ERRORS, Importer
+from core.errors import UserError
 from integrations import ytmusic as ytm
 from integrations.audio import Tags
 from integrations.ytmusic import YTMusicClient
 from integrations.ytmusic.names import split_featured
 from jobs import runner
-from jobs.models import JobRun, JobRunLine
+from jobs.models import JobRun
 from preferences.models import get_value
+
+logger = logging.getLogger(__name__)
 
 # The plural tag with one artist per value, as this application writes it. mutagen reads
 # it from Vorbis comments already; ID3 and MP4 need it registered.
@@ -67,16 +71,16 @@ def resolve_folder(root: Path, folder: str) -> Path:
     by how they read.
 
     Raises:
-        ValueError: The folder is outside ``root`` or does not exist.
+        UserError: The folder is outside ``root`` or does not exist.
     """
     base = root.resolve()
     target = (base / folder).resolve()
     if not target.is_relative_to(base):
-        raise ValueError(
+        raise UserError(
             _("The folder “%(folder)s” is outside the library folder.") % {"folder": folder}
         )
     if not target.is_dir():
-        raise ValueError(_("The folder “%(folder)s” does not exist.") % {"folder": folder})
+        raise UserError(_("The folder “%(folder)s” does not exist.") % {"folder": folder})
     return target
 
 
@@ -187,7 +191,7 @@ class FolderImporter:
             ``False`` if a stop request cut the run short.
 
         Raises:
-            ValueError: The folder is not valid; see :func:`resolve_folder`.
+            UserError: The folder is not valid; see :func:`resolve_folder`.
         """
         base = self._root.resolve()
         target = resolve_folder(self._root, folder)
@@ -234,7 +238,8 @@ class FolderImporter:
         try:
             track, reason = self._track_for(file)
         except FETCH_ERRORS as error:
-            self._skip(relative, LOOKUP_ERROR, str(error))
+            logger.warning("Looking up %s failed: %s", relative, error)
+            self._skip(relative, LOOKUP_ERROR)
             return
         if track is None:
             self._skip(relative, reason)
@@ -248,7 +253,6 @@ class FolderImporter:
             track=track, file_path=stored, audio_format=path.suffix.lower().lstrip(".")
         )
         self.linked += 1
-        runner.line(self.run, JobRunLine.Level.INFO, f"{relative} → “{track.title}”")
 
     def _track_for(self, file: AudioFile) -> tuple[Track | None, str]:
         """Catalogue track for the file, importing its album when the catalogue lacks it.
@@ -272,7 +276,5 @@ class FolderImporter:
         # Nothing after importing means the album or the track is blocked.
         return (found[0], "") if found else (None, NOT_IN_CATALOG)
 
-    def _skip(self, relative: Path, reason: str, detail: str = "") -> None:
+    def _skip(self, relative: Path, reason: str) -> None:
         self.unlinked.append({"file": str(relative), "reason": reason})
-        message = f"{relative}: {reason}" + (f" ({detail})" if detail else "")
-        runner.line(self.run, JobRunLine.Level.WARNING, message)

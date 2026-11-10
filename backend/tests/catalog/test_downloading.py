@@ -73,6 +73,11 @@ def _run(**params: Any) -> JobRun:
     return runner.start("download", params, None)
 
 
+def _counts(run: JobRun) -> dict[str, int]:
+    """The summary without the list of problems."""
+    return {key: value for key, value in run.summary.items() if key != "problems"}
+
+
 def test_downloads_converts_tags_and_records(fake_media: dict[str, Any], tmp_path: Path) -> None:
     track = TrackFactory(title="Song", duration=200, video_id="vvvvvvvvvvv")
     run = _run(track_ids=[track.pk])
@@ -130,8 +135,10 @@ def test_failure_of_one_track_does_not_stop_the_rest() -> None:
     fine = TrackFactory(title="Fine", duration=200)
     run = _run(track_ids=[broken.pk, fine.pk])
     assert run.status == JobRun.Status.SUCCEEDED
-    assert run.summary == {"downloaded": 1, "failed": 1, "skipped": 0}
-    assert run.lines.filter(level="error", message__contains="Broken").exists()
+    assert _counts(run) == {"downloaded": 1, "failed": 1, "skipped": 0}
+    assert run.summary["problems"] == [
+        {"item": "Broken", "reason": "No video matching this track was found."}
+    ]
 
 
 def test_track_without_matching_video_fails(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -302,8 +309,10 @@ def test_album_gain_failure_is_reported_without_failing_the_run(
     run = _run(track_ids=[track.pk])
 
     assert run.status == JobRun.Status.SUCCEEDED
-    assert run.summary == {"downloaded": 1, "failed": 0, "skipped": 0}
-    assert any("disco lleno" in line for line in run.lines.values_list("message", flat=True))
+    assert _counts(run) == {"downloaded": 1, "failed": 0, "skipped": 0}
+    (problem,) = run.summary["problems"]
+    assert problem["item"] == track.album.title
+    assert problem["reason"].startswith("The file could not be read or written.")
 
 
 def test_replaygain_off_measures_nothing(fake_media: dict[str, Any]) -> None:
@@ -335,9 +344,11 @@ def test_lyrics_failure_is_logged_and_the_download_still_succeeds(lrclib: FakeLr
     run = _run(track_ids=[track.pk])
 
     assert run.status == JobRun.Status.SUCCEEDED
-    assert run.summary == {"downloaded": 1, "failed": 0, "skipped": 0}
+    assert _counts(run) == {"downloaded": 1, "failed": 0, "skipped": 0}
     assert Download.objects.filter(track=track).exists()
-    assert any("LRCLIB is down" in m for m in run.lines.values_list("message", flat=True))
+    assert run.summary["problems"] == [
+        {"item": "Song", "reason": "Downloaded, but its lyrics could not be fetched."}
+    ]
 
 
 def test_lyrics_are_not_looked_up_when_turned_off(lrclib: FakeLrclib) -> None:

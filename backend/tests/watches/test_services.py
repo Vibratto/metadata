@@ -1,5 +1,6 @@
 """New-release checks, their scheduling and the job that runs them."""
 
+from collections.abc import Callable
 from datetime import timedelta
 from typing import Any
 
@@ -97,11 +98,15 @@ def test_check_follows_the_order_of_the_watch_and_skips_artists_without_a_channe
     assert asked == ["UCsecond", MAIN]
 
 
-def test_release_that_fails_does_not_stop_the_check(run: JobRun, ytmusic: FakeYTMusic) -> None:
+def test_release_that_fails_does_not_stop_the_check(
+    run: JobRun, ytmusic: FakeYTMusic, noted_problems: Callable[[JobRun], list[dict[str, str]]]
+) -> None:
     ytmusic.failing.add("first")
     result = services.check_watch(_watch(MAIN), run, ytmusic)
     assert (result.status, result.found) == ("succeeded", 1)
-    assert run.lines.filter(level="error", message__contains="First").exists()
+    assert noted_problems(run) == [
+        {"item": "First", "reason": "YouTube Music did not answer as expected."}
+    ]
 
 
 def test_failed_check_is_recorded_and_rescheduled(run: JobRun, ytmusic: FakeYTMusic) -> None:
@@ -112,13 +117,13 @@ def test_failed_check_is_recorded_and_rescheduled(run: JobRun, ytmusic: FakeYTMu
     result = services.check_watch(watch, run, ytmusic)
 
     assert (result.status, result.found) == ("failed", 0)
-    assert result.detail == "artist failed: no data"
+    assert result.detail == "YouTube Music did not answer as expected."
     watch.refresh_from_db()
     assert before + timedelta(hours=2) <= watch.next_run_at < before + timedelta(hours=3)
     assert ActivityLog.objects.get().detail == {"status": "failed", "albums": 0}
 
 
-def test_failure_without_a_message_records_the_exception_name(
+def test_an_unexpected_failure_is_recorded_without_its_technical_text(
     run: JobRun, ytmusic: FakeYTMusic, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     def boom(channel_id: str) -> ytm.ArtistPage:
@@ -126,7 +131,7 @@ def test_failure_without_a_message_records_the_exception_name(
 
     monkeypatch.setattr(ytmusic, "get_artist", boom)
     result = services.check_watch(_watch(MAIN), run, ytmusic)
-    assert result.detail == "RuntimeError"
+    assert result.detail == "Something went wrong."
 
 
 def test_edits_made_during_the_check_are_kept(
@@ -172,7 +177,7 @@ def test_download_that_cannot_start_is_noted_without_failing_the_check(
     JobRun.objects.create(kind="download", status=JobRun.Status.RUNNING)
     result = services.check_watch(_watch(MAIN, auto_download=True), run, ytmusic)
     assert (result.status, result.found) == ("succeeded", 2)
-    assert result.detail == "Download not started: JobAlreadyRunning"
+    assert result.detail == "The new tracks were not downloaded: another download is running."
     assert downloads == []
 
 
@@ -226,7 +231,6 @@ def test_job_checks_the_watches_that_are_due(ytmusic: FakeYTMusic) -> None:
 
     assert run.status == JobRun.Status.SUCCEEDED
     assert run.summary == {"checked": 1, "albums": 2, "failed": 0}
-    assert run.lines.latest("position").message == "due: 2 new releases"
     assert (run.done, run.total) == (1, 1)
 
 
@@ -241,12 +245,12 @@ def test_job_reports_failed_checks(ytmusic: FakeYTMusic) -> None:
     ytmusic.failing.add(MAIN)
     run = runner.start("watch_check", {}, None)
     assert run.status == JobRun.Status.SUCCEEDED
-    assert run.summary == {"checked": 1, "albums": 0, "failed": 1}
-    line = run.lines.latest("position")
-    assert (line.level, line.message) == (
-        "error",
-        "broken: 0 new releases (artist failed: no data)",
-    )
+    assert run.summary == {
+        "checked": 1,
+        "albums": 0,
+        "failed": 1,
+        "problems": [{"item": "broken", "reason": "YouTube Music did not answer as expected."}],
+    }
 
 
 def test_job_stops_between_watches(ytmusic: FakeYTMusic, monkeypatch: pytest.MonkeyPatch) -> None:

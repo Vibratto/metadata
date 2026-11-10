@@ -6,10 +6,12 @@ from datetime import timedelta
 
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from activity.services import log_activity
 from catalog.models import Album, Artist, BlockedItem, Track
 from catalog.services.importing import Importer, ytmusic_client
+from catalog.services.problems import reason_for
 from integrations import ytmusic as ytm
 from integrations.ytmusic import YTMusicClient
 from jobs import runner
@@ -44,8 +46,8 @@ def _start_download(tracks: list[Track], user: User | None) -> str:
     """
     try:
         runner.start(DOWNLOAD_KIND, {"track_ids": [t.pk for t in tracks]}, user)
-    except (UnknownJobKind, runner.JobAlreadyRunning) as error:
-        return f"Download not started: {type(error).__name__}"
+    except (UnknownJobKind, runner.JobAlreadyRunning):
+        return str(_("The new tracks were not downloaded: another download is running."))
     return ""
 
 
@@ -71,8 +73,8 @@ def check_watch(watch: Watch, run: JobRun, client: YTMusicClient | None = None) 
             detail = _start_download(tracks, user)
     except Exception as error:
         logger.exception("Checking watch %s failed", watch.pk)
-        status, detail = WatchRun.Status.FAILED, str(error) or type(error).__name__
-    # Only the releases that were saved; one that failed is in the job's log.
+        status, detail = WatchRun.Status.FAILED, reason_for(error)
+    # Only the releases that were saved; one that failed is among the job's problems.
     albums = importer.counts["albums"]
     result = WatchRun.objects.create(
         watch=watch,
