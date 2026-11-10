@@ -12,7 +12,7 @@ import { routes } from '../router'
 import { useSessionStore } from '../stores/session'
 import LogView from '../views/log/LogView.vue'
 import { render } from './helpers'
-import { fill as fillNow } from './viewHelpers'
+import { choose as chooseNow, fill as fillNow } from './viewHelpers'
 
 type JobRun = components['schemas']['JobRun']
 type Tree = { [key: string]: string | Tree }
@@ -61,10 +61,9 @@ async function fill(
 async function choose(
   wrapper: Awaited<ReturnType<typeof mountLog>>['wrapper'],
   label: string,
-  value: string,
+  option: string,
 ) {
-  const field = wrapper.findAll('label').find((l) => l.text() === label)
-  await wrapper.get(`#${field?.attributes('for')}`).setValue(value)
+  await chooseNow(wrapper, label, option)
   await flushPromises()
 }
 
@@ -117,7 +116,7 @@ describe('Activity tab', () => {
     await fill(wrapper, 'To', '2026-01-31')
     await fill(wrapper, 'User', 'demo')
     await fill(wrapper, 'Action', 'blocked')
-    await choose(wrapper, 'Object type', 'catalog.track')
+    await choose(wrapper, 'Object type', 'Track')
     await vi.waitFor(() =>
       expect(seen.at(-1)).toEqual({
         date_from: '2026-01-01',
@@ -244,8 +243,8 @@ describe('Jobs tab', () => {
     expect(wrapper.get('[aria-current="page"]').text()).toBe('Jobs')
     expect(wrapper.text()).toContain('Download')
     expect(wrapper.text()).toContain('1 / 4')
-    await choose(wrapper, 'Job type', 'import')
-    await choose(wrapper, 'Status', 'failed')
+    await choose(wrapper, 'Job type', 'Import')
+    await choose(wrapper, 'Status', 'Failed')
     await fill(wrapper, 'From', '2026-01-01T00:00')
     await fill(wrapper, 'To', '2026-01-02T00:00')
     await flushPromises()
@@ -312,7 +311,7 @@ describe('Technical logs tab', () => {
     expect(wrapper.findAll('details')).toHaveLength(1)
 
     const seen = record('/api/v1/activity/logs/')
-    await choose(wrapper, 'Minimum level', '40')
+    await choose(wrapper, 'Minimum level', 'Error')
     await fill(wrapper, 'Module', 'catalog')
     await fill(wrapper, 'Job number', '5')
     await fill(wrapper, 'Search the message', 'yt-dlp')

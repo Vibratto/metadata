@@ -41,3 +41,29 @@ export async function fill(
   // Leaving the field emits at once what was typed in debounced search fields.
   await input.trigger('blur')
 }
+
+/** The `BaseSelect` with that visible label. */
+export function dropdown(wrapper: ReturnType<typeof render>, label: string) {
+  const found = wrapper
+    .findAll('.select')
+    .find((select) => select.get('.select__label').text() === label)
+  if (!found) throw new Error(`No “${label}” dropdown`)
+  return found
+}
+
+/** Text of the option a `BaseSelect` currently shows as chosen. */
+export const chosen = (wrapper: ReturnType<typeof render>, label: string): string =>
+  dropdown(wrapper, label).get('.select__value').text()
+
+/** Opens the `BaseSelect` with that label and clicks the option with that text. */
+export async function choose(
+  wrapper: ReturnType<typeof render>,
+  label: string,
+  option: string,
+): Promise<void> {
+  const select = dropdown(wrapper, label)
+  await select.get('[role="combobox"]').trigger('click')
+  const item = select.findAll('[role="option"]').find((o) => o.text() === option)
+  if (!item) throw new Error(`No “${option}” option in “${label}”`)
+  await item.trigger('click')
+}

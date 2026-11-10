@@ -10,6 +10,7 @@ import BaseButton from '../components/BaseButton.vue'
 import BaseCheckbox from '../components/BaseCheckbox.vue'
 import BaseDialog from '../components/BaseDialog.vue'
 import BaseField from '../components/BaseField.vue'
+import BaseSelect from '../components/BaseSelect.vue'
 import ResponsiveList from '../components/ResponsiveList.vue'
 
 type Proxy = components['schemas']['Proxy']
@@ -29,14 +30,15 @@ const BASE = '/api/v1/proxies/'
  * edit, enable or disable, delete with confirmation and connection test.
  */
 const { t, te, locale } = useI18n()
-const ipVersionId = useId()
 const bulkTextId = useId()
-const bulkIpVersionId = useId()
-const bulkSchemeId = useId()
 
 const SCHEMES: Scheme[] = ['http', 'https', 'socks5', 'socks5h']
 
 const IP_VERSIONS: Record<IpVersion, string> = { ipv4: 'IPv4', ipv6: 'IPv6' }
+const ipVersions = (Object.keys(IP_VERSIONS) as IpVersion[]).map((value) => ({
+  value,
+  label: IP_VERSIONS[value],
+}))
 
 const proxies = ref<Proxy[]>([])
 const message = ref('')
@@ -247,14 +249,11 @@ onMounted(load)
       <form name="proxy" class="proxies__form" @submit.prevent="save">
         <BaseAlert v-if="formError" variant="error">{{ formError }}</BaseAlert>
         <BaseField v-model="url" :label="t('proxies.form.url')" type="url" :error="urlError" />
-        <div class="proxies__select">
-          <label :for="ipVersionId">{{ t('proxies.form.ipVersion') }}</label>
-          <select :id="ipVersionId" v-model="ipVersion">
-            <option v-for="(label, value) in IP_VERSIONS" :key="value" :value="value">
-              {{ label }}
-            </option>
-          </select>
-        </div>
+        <BaseSelect
+          v-model="ipVersion"
+          :label="t('proxies.form.ipVersion')"
+          :options="ipVersions"
+        />
         <BaseCheckbox v-model="enabled" :label="t('proxies.form.enabled')" />
         <BaseButton type="submit">{{ t('proxies.form.save') }}</BaseButton>
       </form>
@@ -275,20 +274,16 @@ onMounted(load)
           <textarea :id="bulkTextId" v-model="bulkText" rows="8" spellcheck="false" />
           <p class="proxies__hint">{{ t('proxies.bulk.hint') }}</p>
         </div>
-        <div class="proxies__select">
-          <label :for="bulkIpVersionId">{{ t('proxies.bulk.ipVersion') }}</label>
-          <select :id="bulkIpVersionId" v-model="bulkIpVersion">
-            <option v-for="(label, value) in IP_VERSIONS" :key="value" :value="value">
-              {{ label }}
-            </option>
-          </select>
-        </div>
-        <div class="proxies__select">
-          <label :for="bulkSchemeId">{{ t('proxies.bulk.defaultScheme') }}</label>
-          <select :id="bulkSchemeId" v-model="bulkScheme">
-            <option v-for="scheme in SCHEMES" :key="scheme" :value="scheme">{{ scheme }}</option>
-          </select>
-        </div>
+        <BaseSelect
+          v-model="bulkIpVersion"
+          :label="t('proxies.bulk.ipVersion')"
+          :options="ipVersions"
+        />
+        <BaseSelect
+          v-model="bulkScheme"
+          :label="t('proxies.bulk.defaultScheme')"
+          :options="SCHEMES.map((value) => ({ value, label: value }))"
+        />
         <BaseCheckbox v-model="bulkEnabled" :label="t('proxies.bulk.enabled')" />
         <BaseButton type="submit">{{ t('proxies.bulk.submit') }}</BaseButton>
       </form>

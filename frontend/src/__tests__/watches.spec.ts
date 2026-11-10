@@ -10,7 +10,7 @@ import watchHandlers, { watches } from '../mocks/handlers/watches'
 import WatchFormView from '../views/watches/WatchFormView.vue'
 import WatchesView from '../views/watches/WatchesView.vue'
 import WatchView from '../views/watches/WatchView.vue'
-import { fill, mountView } from './viewHelpers'
+import { choose, fill, mountView } from './viewHelpers'
 
 type JobRun = components['schemas']['JobRun']
 
@@ -135,9 +135,8 @@ describe('WatchesView', () => {
     onTestFinished(() => void server.events.removeAllListeners())
     const { wrapper, router } = await mount(WatchesView, '/watches')
     await fill(wrapper, 'Search', 'urb')
-    const selects = wrapper.findAll('select')
-    await selects.find((s) => s.text().includes('Paused'))!.setValue('true')
-    await selects.find((s) => s.text().includes('Name (Z-A)'))!.setValue('-name')
+    await choose(wrapper, 'Status', 'Active')
+    await choose(wrapper, 'Sort by', 'Name (Z-A)')
     await wrapper.get('form').trigger('submit')
     await settle()
     expect(router.currentRoute.value.query).toEqual({
@@ -157,8 +156,8 @@ describe('WatchesView', () => {
   it('picks the artist of the watch with the searchable picker', async () => {
     const { wrapper, router } = await mount(WatchesView, '/watches')
     await wrapper.get('input[role="combobox"]').trigger('focus')
-    await vi.waitFor(() => expect(wrapper.findAll('[role="option"]').length).toBeGreaterThan(0))
-    await wrapper.get('[role="option"]').trigger('mousedown')
+    await vi.waitFor(() => expect(wrapper.findAll('.combo [role="option"]').length).toBeGreaterThan(0))
+    await wrapper.get('.combo [role="option"]').trigger('mousedown')
     await settle()
     await vi.waitFor(() => expect(router.currentRoute.value.query.artist).toBeDefined())
   })

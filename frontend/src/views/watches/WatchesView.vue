@@ -8,6 +8,7 @@ import BaseAlert from '../../components/BaseAlert.vue'
 import ActiveFilters from '../../components/ActiveFilters.vue'
 import BaseButton from '../../components/BaseButton.vue'
 import BaseField from '../../components/BaseField.vue'
+import BaseSelect from '../../components/BaseSelect.vue'
 import EntityFilter from '../../components/EntityFilter.vue'
 import FilterPanel from '../../components/FilterPanel.vue'
 import { entityName } from '../../composables/useEntityLabels'
@@ -89,31 +90,34 @@ const status = (w: Watch) => [
     <FilterPanel>
       <form class="watches__filters" @submit.prevent="apply">
         <BaseField v-model="form.search!" type="search" :label="t('watches.filters.search')" />
-        <label class="watches__select">
-          {{ t('watches.filters.ordering') }}
-          <select v-model="form.ordering">
-            <option value="">{{ t('watches.filters.default') }}</option>
-            <option value="name">{{ t('watches.filters.name') }}</option>
-            <option value="-name">{{ t('watches.filters.name_desc') }}</option>
-            <option value="next_run_at">{{ t('watches.filters.next_run_at') }}</option>
-          </select>
-        </label>
-        <label class="watches__select">
-          {{ t('watches.filters.enabled') }}
-          <select v-model="form.enabled">
-            <option value="">{{ t('library.filters.any') }}</option>
-            <option value="true">{{ t('watches.enabled') }}</option>
-            <option value="false">{{ t('watches.disabled') }}</option>
-          </select>
-        </label>
-        <label class="watches__select">
-          {{ t('watches.filters.auto_download') }}
-          <select v-model="form.auto_download">
-            <option value="">{{ t('library.filters.any') }}</option>
-            <option value="true">{{ t('library.yes') }}</option>
-            <option value="false">{{ t('library.no') }}</option>
-          </select>
-        </label>
+        <BaseSelect
+          v-model="form.ordering!"
+          :label="t('watches.filters.ordering')"
+          :options="[
+            { value: '', label: t('watches.filters.default') },
+            { value: 'name', label: t('watches.filters.name') },
+            { value: '-name', label: t('watches.filters.name_desc') },
+            { value: 'next_run_at', label: t('watches.filters.next_run_at') },
+          ]"
+        />
+        <BaseSelect
+          v-model="form.enabled!"
+          :label="t('watches.filters.enabled')"
+          :options="[
+            { value: '', label: t('library.filters.any') },
+            { value: 'true', label: t('watches.enabled') },
+            { value: 'false', label: t('watches.disabled') },
+          ]"
+        />
+        <BaseSelect
+          v-model="form.auto_download!"
+          :label="t('watches.filters.auto_download')"
+          :options="[
+            { value: '', label: t('library.filters.any') },
+            { value: 'true', label: t('library.yes') },
+            { value: 'false', label: t('library.no') },
+          ]"
+        />
         <EntityFilter
           :model-value="list.query.artist ?? ''"
           kind="artists"
@@ -171,11 +175,6 @@ const status = (w: Watch) => [
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
   gap: var(--space-3);
   align-items: end;
-}
-.watches__select {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4375rem;
 }
 .watches {
   display: flex;

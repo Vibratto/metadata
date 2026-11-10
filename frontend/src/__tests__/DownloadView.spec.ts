@@ -141,14 +141,14 @@ describe('DownloadView', () => {
     const { wrapper, router } = await mount('/download?album=2')
     const [artist, album] = wrapper.findAll('input[role="combobox"]')
     await artist!.trigger('focus')
-    await vi.waitFor(() => expect(wrapper.findAll('[role="option"]')).toHaveLength(1))
-    await wrapper.get('[role="option"]').trigger('mousedown')
+    await vi.waitFor(() => expect(wrapper.findAll('.combo [role="option"]')).toHaveLength(1))
+    await wrapper.get('.combo [role="option"]').trigger('mousedown')
     await vi.waitFor(() => expect(router.currentRoute.value.query).toMatchObject({ artist: '1' }))
     expect(router.currentRoute.value.query.album).toBeUndefined()
     await album!.trigger('focus')
     await vi.waitFor(() => expect(albumQueries.at(-1)).toEqual({ artist: '1', page_size: '20' }))
-    await vi.waitFor(() => expect(wrapper.findAll('[role="option"]')).toHaveLength(1))
-    await wrapper.get('[role="option"]').trigger('mousedown')
+    await vi.waitFor(() => expect(wrapper.findAll('.combo [role="option"]')).toHaveLength(1))
+    await wrapper.get('.combo [role="option"]').trigger('mousedown')
     await vi.waitFor(() =>
       expect(api.trackQueries.at(-1)).toEqual({ downloaded: 'false', artist: '1', album: '1' }),
     )

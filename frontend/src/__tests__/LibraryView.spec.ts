@@ -8,7 +8,7 @@ import { routes } from '../router'
 import LibraryView from '../views/library/LibraryView.vue'
 import { duration } from '../views/library/kinds'
 import { trackRequests } from './settle'
-import { fill, mountView } from './viewHelpers'
+import { choose, chosen, fill, mountView } from './viewHelpers'
 
 type Tree = { [key: string]: string | Tree }
 
@@ -165,8 +165,8 @@ describe('LibraryView', () => {
     await fill(wrapper, 'Search', 'random')
     await fill(wrapper, 'Year from', '2010')
     await fill(wrapper, 'Year to', '2020')
-    await wrapper.get('select').setValue('-year')
-    expect(wrapper.text()).toContain('Year (newest first)')
+    await choose(wrapper, 'Sort by', 'Year (newest first)')
+    expect(chosen(wrapper, 'Sort by')).toBe('Year (newest first)')
     await wrapper.get('form').trigger('submit')
     await settle()
     await vi.waitFor(() =>
@@ -192,7 +192,7 @@ describe('LibraryView', () => {
     const seen = spy('tracks')
     const { wrapper, router } = await mount('/library?tab=tracks&search=get')
     expect((wrapper.get('input').element as HTMLInputElement).value).toBe('get')
-    await wrapper.findAll('select')[1]!.setValue('false')
+    await choose(wrapper, 'Downloaded', 'No')
     await wrapper.get('form').trigger('submit')
     await settle()
     await vi.waitFor(() =>
@@ -235,8 +235,8 @@ describe('LibraryView', () => {
     const { wrapper, router } = await mount('/library?tab=albums&page=3')
     const combo = wrapper.get('input[role="combobox"]')
     await combo.trigger('focus')
-    await vi.waitFor(() => expect(wrapper.findAll('[role="option"]')).toHaveLength(2))
-    await wrapper.findAll('[role="option"]')[1]!.trigger('mousedown')
+    await vi.waitFor(() => expect(wrapper.findAll('.combo [role="option"]')).toHaveLength(2))
+    await wrapper.findAll('.combo [role="option"]')[1]!.trigger('mousedown')
     await settle()
     await vi.waitFor(() =>
       expect(router.currentRoute.value.query).toEqual({ tab: 'albums', artist: '2' }),
@@ -251,10 +251,7 @@ describe('LibraryView', () => {
     const seen = spy('albums')
     const { wrapper, router } = await mount('/library?tab=albums')
     await fill(wrapper, 'Year from', '2010')
-    await wrapper
-      .findAll('select')
-      .find((s) => s.text().includes('Single'))!
-      .setValue('single')
+    await choose(wrapper, 'Type', 'Single')
     await wrapper.get('form').trigger('submit')
     await settle()
     await vi.waitFor(() =>
@@ -340,7 +337,7 @@ describe('LibraryView', () => {
     const seen = spy('artists')
     const { wrapper } = await mount('/library?tab=albums')
     await wrapper.get('input[role="combobox"]').trigger('focus')
-    await vi.waitFor(() => expect(wrapper.findAll('[role="option"]')).toHaveLength(2))
+    await vi.waitFor(() => expect(wrapper.findAll('.combo [role="option"]')).toHaveLength(2))
     expect(seen.at(-1)).toMatchObject({ profile_only: 'false' })
   })
 

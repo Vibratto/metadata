@@ -7,6 +7,7 @@ import ActiveFilters, { type ActiveFilter } from '../../components/ActiveFilters
 import BaseAlert from '../../components/BaseAlert.vue'
 import BaseButton from '../../components/BaseButton.vue'
 import BaseField from '../../components/BaseField.vue'
+import BaseSelect, { type SelectOption } from '../../components/BaseSelect.vue'
 import CoverArt from '../../components/CoverArt.vue'
 import EntityFilter from '../../components/EntityFilter.vue'
 import FilterPanel from '../../components/FilterPanel.vue'
@@ -64,6 +65,13 @@ const { preview, showPreview, closePreview } = useVideoPreview()
 // Editable copy of the simple filters: applied on submit, not on every keystroke.
 const fieldKeys = spec.fields.map((f) => f.key)
 const form = reactive<Record<string, string>>({})
+const orderings = computed<SelectOption[]>(() => [
+  { value: '', label: t('library.ordering.default') },
+  ...spec.orderings.map((value) => ({
+    value,
+    label: t(`library.ordering.${value.replace(/^-(.*)/, '$1_desc')}`),
+  })),
+])
 function sync(): void {
   for (const key of ['search', 'ordering', ...fieldKeys]) form[key] = list.query[key] ?? ''
 }
@@ -161,15 +169,11 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
           :debounce="300"
           :label="t('library.filters.search')"
         />
-        <label class="library-list__select">
-          {{ t('library.filters.ordering') }}
-          <select v-model="form.ordering">
-            <option value="">{{ t('library.ordering.default') }}</option>
-            <option v-for="o in spec.orderings" :key="o" :value="o">
-              {{ t(`library.ordering.${o.replace(/^-(.*)/, '$1_desc')}`) }}
-            </option>
-          </select>
-        </label>
+        <BaseSelect
+          v-model="form.ordering!"
+          :label="t('library.filters.ordering')"
+          :options="orderings"
+        />
         <EntityFilter
           v-if="spec.entities.includes('artist')"
           :model-value="list.query.artist ?? ''"
@@ -188,15 +192,18 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
           @update:model-value="setEntity('album', $event)"
         />
         <template v-for="f in spec.fields" :key="f.key">
-          <label v-if="f.type === 'select'" class="library-list__select">
-            {{ t(`library.filterLabels.${f.key}`) }}
-            <select v-model="form[f.key]">
-              <option value="">{{ t('library.filters.any') }}</option>
-              <option v-for="[value, text] in f.options" :key="value" :value="value">
-                {{ t(`library.options.${text}`) }}
-              </option>
-            </select>
-          </label>
+          <BaseSelect
+            v-if="f.type === 'select'"
+            v-model="form[f.key]!"
+            :label="t(`library.filterLabels.${f.key}`)"
+            :options="[
+              { value: '', label: t('library.filters.any') },
+              ...(f.options ?? []).map(([value, text]) => ({
+                value,
+                label: t(`library.options.${text}`),
+              })),
+            ]"
+          />
           <BaseField
             v-else
             v-model="form[f.key]!"
@@ -326,11 +333,6 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
 .library-list__filters {
   display: grid;
   gap: var(--space-3);
-}
-.library-list__select {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4375rem;
 }
 .library-list__empty {
   padding: var(--space-5) var(--space-3);

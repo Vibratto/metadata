@@ -74,12 +74,13 @@ const bodyId = useId()
     background: none;
   }
   .filters__body :deep(input:not([type='checkbox'])),
-  .filters__body :deep(select) {
+  .filters__body :deep(.select__button) {
     min-height: 2.5rem;
     border-radius: 999px;
     font-size: 0.875rem;
   }
-  .filters__body :deep(label) {
+  .filters__body :deep(label),
+  .filters__body :deep(.select__label) {
     color: var(--color-muted);
     font-size: 0.8125rem;
   }
