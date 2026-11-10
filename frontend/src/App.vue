@@ -64,13 +64,16 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  max-width: 80rem;
+  /* Same width and side padding as .app-main, so the search lines up with the page. */
+  max-width: var(--content-width);
+  margin-inline: auto;
   padding: 0.75rem var(--space-3);
   background: color-mix(in srgb, var(--color-bg) 88%, transparent);
   backdrop-filter: blur(12px);
 }
-.topbar :deep(.jobs-indicator) {
-  margin-left: auto;
+/* The search sits in the middle; the running jobs and the theme go to the right edge. */
+.topbar :deep(.global-search) {
+  margin-inline: auto;
 }
 .failed-notice {
   display: flex;

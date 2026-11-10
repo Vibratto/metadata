@@ -223,7 +223,7 @@ onUnmounted(() => clearInterval(timer))
 .dashboard__date::first-letter {
   text-transform: uppercase;
 }
-/* Mobile-first: two columns of totals on mobile and four from 600 px. */
+/* Mobile-first: two columns of totals on mobile; from 600 px, as many as fit in a row. */
 .stats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -371,7 +371,7 @@ h2.card__head {
 
 @media (min-width: 600px) {
   .stats {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
     gap: var(--space-3);
   }
 }

@@ -256,7 +256,7 @@ onUnmounted(() => {
   flex: 1;
   align-items: center;
   gap: var(--space-2);
-  max-width: 34rem;
+  max-width: 40rem;
   color: var(--color-faint);
 }
 .global-search__scope {

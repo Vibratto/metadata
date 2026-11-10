@@ -217,6 +217,7 @@ form {
   flex-direction: column;
   gap: var(--space-3);
   max-width: 32rem;
+  margin-inline: auto;
 }
 .hint {
   margin: 0;

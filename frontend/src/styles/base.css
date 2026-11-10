@@ -386,7 +386,8 @@ legend {
    From 1024 px up the navigation moves to the side. */
 .app-main {
   width: 100%;
-  max-width: 80rem;
+  max-width: var(--content-width);
+  margin-inline: auto;
   padding: var(--space-2) var(--space-3);
   padding-bottom: calc(var(--nav-bar-height) + var(--space-5) + env(safe-area-inset-bottom));
 }

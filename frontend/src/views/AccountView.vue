@@ -124,6 +124,7 @@ const logout = () =>
   flex-direction: column;
   gap: var(--space-3);
   max-width: 32rem;
+  margin-inline: auto;
 }
 form {
   display: flex;
