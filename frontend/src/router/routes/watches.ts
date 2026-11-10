@@ -1,6 +1,5 @@
 import type { RouteRecordRaw } from 'vue-router'
 
-import WatchFormView from '../../views/watches/WatchFormView.vue'
 import WatchesView from '../../views/watches/WatchesView.vue'
 import WatchView from '../../views/watches/WatchView.vue'
 
@@ -12,7 +11,11 @@ export default [
     component: WatchesView,
     meta: { navLabel: 'watches.nav', navGroup: 'main', navOrder: 40, navIcon: 'bell' },
   },
-  { path: '/watches/new', name: 'watches-new', component: WatchFormView },
+  // Creating and editing happen in a dialog; these keep old links working.
+  { path: '/watches/new', redirect: { name: 'watches', query: { new: '1' } } },
   { path: '/watches/:id(\\d+)', name: 'watch', component: WatchView },
-  { path: '/watches/:id(\\d+)/edit', name: 'watches-edit', component: WatchFormView },
+  {
+    path: '/watches/:id(\\d+)/edit',
+    redirect: (to) => ({ name: 'watch', params: to.params, query: { edit: '1' } }),
+  },
 ] satisfies RouteRecordRaw[]

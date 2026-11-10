@@ -7,22 +7,13 @@ import { POLL_MS } from '../composables/useJobRun'
 import { messages } from '../locales'
 import { server } from '../mocks/server'
 import watchHandlers, { watches } from '../mocks/handlers/watches'
-import WatchFormView from '../views/watches/WatchFormView.vue'
+import WatchForm from '../views/watches/WatchForm.vue'
 import WatchesView from '../views/watches/WatchesView.vue'
 import WatchView from '../views/watches/WatchView.vue'
+import { render } from './helpers'
 import { choose, fill, mountView } from './viewHelpers'
 
 type JobRun = components['schemas']['JobRun']
-
-// jsdom no implementa showModal/close de <dialog>.
-Object.assign(HTMLDialogElement.prototype, {
-  showModal(this: HTMLDialogElement) {
-    this.setAttribute('open', '')
-  },
-  close(this: HTMLDialogElement) {
-    this.removeAttribute('open')
-  },
-})
 
 // Other views also mock `catalog/artists/` with their own data: here the watches ones win.
 beforeEach(() => server.use(...watchHandlers))
@@ -171,22 +162,24 @@ describe('WatchesView', () => {
   })
 })
 
-describe('WatchFormView', () => {
+describe('WatchForm, in the dialogs of the list and the detail', () => {
   it('searches library artists by itself once typing stops', async () => {
-    const { wrapper } = await mount(WatchFormView, '/watches/new')
+    const { wrapper } = await mount(WatchesView, '/watches?new=1')
     await wrapper.get('form[name="artist-search"] input').setValue('r')
     await vi.waitFor(() => expect(button(wrapper, 'Add Rosalía')).toBeTruthy())
   })
 
   it('creates with artists searched in the library, in order', async () => {
     const bodies = capture('POST')
-    const { wrapper, router } = await mount(WatchFormView, '/watches/new')
-    expect(wrapper.get('h1').text()).toBe('New release watch')
+    // The old link to the form's page opens the dialog on the list.
+    const { wrapper, router } = await mount(WatchesView, '/watches/new')
+    expect(router.currentRoute.value.fullPath).toBe('/watches?new=1')
+    expect(wrapper.get('dialog[open] h2').text()).toBe('New release watch')
     expect(wrapper.text()).toContain('No artists yet.')
 
     await fill(wrapper, 'Name', 'Mis novedades')
     await fill(wrapper, 'Interval in hours', '6')
-    await wrapper.findAll('input[type="checkbox"]')[0]?.setValue(true)
+    await wrapper.findAll('dialog[open] input[type="checkbox"]')[0]?.setValue(true)
     await fill(wrapper, 'Search the catalogue', 'r')
     await wrapper.get('form[name="artist-search"]').trigger('submit')
     await settle()
@@ -206,13 +199,17 @@ describe('WatchFormView', () => {
         artist_ids: [3, 1],
       },
     ])
-    expect(router.currentRoute.value.fullPath).toBe('/watches/3')
+    // Saved: the dialog closes and the list stays, without the query that opened it.
+    expect(wrapper.find('dialog[open]').exists()).toBe(false)
+    expect(router.currentRoute.value.fullPath).toBe('/watches')
   })
 
   it('does not offer artists already chosen and allows moving down and removing', async () => {
     const bodies = capture('PATCH')
-    const { wrapper } = await mount(WatchFormView, '/watches/1/edit')
-    expect(wrapper.get('h1').text()).toBe('Edit “Urban”')
+    // The old link to the edit page opens the dialog on the detail.
+    const { wrapper, router } = await mount(WatchView, '/watches/1/edit')
+    expect(router.currentRoute.value.fullPath).toBe('/watches/1?edit=1')
+    expect(wrapper.get('dialog[open] h2').text()).toBe('Edit “Urban”')
     expect(wrapper.findAll('.artists__chosen li').map((li) => li.text().split(/\s/)[0])).toEqual([
       'Bad',
       'Rauw',
@@ -226,12 +223,14 @@ describe('WatchFormView', () => {
 
     await button(wrapper, 'Move Bad Bunny down').trigger('click')
     await button(wrapper, 'Remove Bad Bunny').trigger('click')
-    await wrapper.findAll('input[type="checkbox"]')[1]?.setValue(false)
+    await wrapper.findAll('dialog[open] input[type="checkbox"]')[1]?.setValue(false)
     await wrapper.get('form[name="watch"]').trigger('submit')
     await settle()
     expect(bodies).toEqual([
       { name: 'Urban', interval_hours: 24, auto_download: false, enabled: false, artist_ids: [3] },
     ])
+    expect(wrapper.find('dialog[open]').exists()).toBe(false)
+    expect(router.currentRoute.value.fullPath).toBe('/watches/1')
   })
 
   it('shows each validation error on its field and the rest above', async () => {
@@ -246,7 +245,7 @@ describe('WatchFormView', () => {
         { status: 400 },
       ),
     )
-    const { wrapper, router } = await mount(WatchFormView, '/watches/new')
+    const { wrapper } = await mount(WatchesView, '/watches?new=1')
     await wrapper.get('form[name="watch"]').trigger('submit')
     await settle()
     const errors = wrapper.findAll('.field__error').map((p) => p.text())
@@ -255,25 +254,26 @@ describe('WatchFormView', () => {
       'Ensure this value is greater than or equal to 1.',
     ])
     expect(wrapper.get('.artists__error').text()).toBe('Some artist does not exist.')
-    expect(wrapper.get('.alert').text()).toBe('Something else.')
-    expect(router.currentRoute.value.name).toBe('watches-new')
+    expect(wrapper.get('dialog[open] .alert').text()).toBe('Something else.')
   })
 
   it('a 400 with only field errors sets no general alert', async () => {
-    captureSave('post', () => HttpResponse.json({ name: ['Obligatorio.'] }, { status: 400 }))
-    const { wrapper } = await mount(WatchFormView, '/watches/new')
+    captureSave('post', () => HttpResponse.json({ name: ['Required.'] }, { status: 400 }))
+    const { wrapper } = await mount(WatchesView, '/watches?new=1')
     await wrapper.get('form[name="watch"]').trigger('submit')
     await settle()
-    expect(wrapper.get('.field__error').text()).toBe('Obligatorio.')
-    expect(wrapper.find('.alert').exists()).toBe(false)
+    expect(wrapper.get('.field__error').text()).toBe('Required.')
+    expect(wrapper.find('dialog[open] .alert').exists()).toBe(false)
   })
 
   it('other failures go to the general alert', async () => {
     captureSave('post', () => new HttpResponse(null, { status: 500 }))
-    const { wrapper } = await mount(WatchFormView, '/watches/new')
+    const { wrapper } = await mount(WatchesView, '/watches?new=1')
     await wrapper.get('form[name="watch"]').trigger('submit')
     await settle()
-    expect(wrapper.get('.alert').text()).toBe('The server failed. Please try again later.')
+    expect(wrapper.get('dialog[open] .alert').text()).toBe(
+      'The server failed. Please try again later.',
+    )
     expect(wrapper.find('.field__error').exists()).toBe(false)
   })
 
@@ -282,11 +282,56 @@ describe('WatchFormView', () => {
       http.get('/api/v1/watches/:id/', () => new HttpResponse(null, { status: 404 })),
       http.get('/api/v1/catalog/artists/', () => new HttpResponse(null, { status: 500 })),
     )
-    const { wrapper } = await mount(WatchFormView, '/watches/5/edit')
+    const wrapper = render(WatchForm, { props: { watchId: 5 } })
+    await settle()
     expect(wrapper.get('.alert').text()).toBe('We could not find what you were looking for.')
     await wrapper.get('form[name="artist-search"]').trigger('submit')
     await settle()
     expect(wrapper.get('.alert').text()).toBe('The server failed. Please try again later.')
+  })
+})
+
+describe('the watch dialogs', () => {
+  it('“New watch” opens the form, and closing it creates nothing', async () => {
+    const bodies = capture('POST')
+    const { wrapper, router } = await mount(WatchesView, '/watches')
+    expect(wrapper.find('dialog[open]').exists()).toBe(false)
+    expect(wrapper.find('form[name="watch"]').exists()).toBe(false)
+    await button(wrapper, 'New watch').trigger('click')
+    expect(wrapper.get('dialog[open] h2').text()).toBe('New release watch')
+    await fill(wrapper, 'Name', 'Half typed')
+    await wrapper.get('dialog[open] .dialog__actions button').trigger('click')
+    await settle()
+    expect(wrapper.find('dialog[open]').exists()).toBe(false)
+    expect(bodies).toEqual([])
+    // Opening it again starts from an empty form.
+    await button(wrapper, 'New watch').trigger('click')
+    expect((wrapper.get('form[name="watch"] input').element as HTMLInputElement).value).toBe('')
+    expect(router.currentRoute.value.fullPath).toBe('/watches')
+  })
+
+  it('closing the dialog opened by an old link removes the query that opened it', async () => {
+    const { wrapper, router } = await mount(WatchesView, '/watches?new=1&search=urb')
+    await wrapper.get('dialog[open] .dialog__actions button').trigger('click')
+    await settle()
+    expect(router.currentRoute.value.fullPath).toBe('/watches?search=urb')
+  })
+
+  it('“Edit” on the detail opens the form and the page shows what was saved', async () => {
+    server.use(
+      http.patch('/api/v1/watches/:id/', async ({ request }) =>
+        HttpResponse.json({ ...watches[0], ...((await request.json()) as object) }),
+      ),
+    )
+    const { wrapper } = await mount(WatchView, '/watches/1')
+    expect(wrapper.find('form[name="watch"]').exists()).toBe(false)
+    await button(wrapper, 'Edit').trigger('click')
+    await settle()
+    await fill(wrapper, 'Name', 'Urban hits')
+    await wrapper.get('form[name="watch"]').trigger('submit')
+    await settle()
+    expect(wrapper.find('dialog[open]').exists()).toBe(false)
+    expect(wrapper.get('h1').text()).toBe('Urban hits')
   })
 })
 

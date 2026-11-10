@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 
 import type { components } from '../../api/schema'
 import AppIcon from '../../components/AppIcon.vue'
 import BaseAlert from '../../components/BaseAlert.vue'
 import ActiveFilters from '../../components/ActiveFilters.vue'
 import BaseButton from '../../components/BaseButton.vue'
+import BaseDialog from '../../components/BaseDialog.vue'
 import BaseField from '../../components/BaseField.vue'
 import BaseSelect from '../../components/BaseSelect.vue'
 import EntityFilter from '../../components/EntityFilter.vue'
@@ -14,6 +16,7 @@ import FilterPanel from '../../components/FilterPanel.vue'
 import { entityName } from '../../composables/useEntityLabels'
 import CoverArt from '../../components/CoverArt.vue'
 import { usePagedList } from '../../composables/usePagedList'
+import WatchForm from './WatchForm.vue'
 
 type Watch = components['schemas']['Watch']
 
@@ -22,6 +25,19 @@ type Watch = components['schemas']['Watch']
  */
 const { t } = useI18n()
 const list = usePagedList<Watch>('/api/v1/watches/', ['enabled', 'auto_download', 'artist'])
+
+// A watch is created in a dialog. An old ".../new" link arrives as "?new=1" and opens it.
+const route = useRoute()
+const router = useRouter()
+const creating = ref(route.query.new === '1')
+function closeForm(): void {
+  creating.value = false
+  if (route.query.new) void router.replace({ query: { ...route.query, new: undefined } })
+}
+async function created(): Promise<void> {
+  closeForm()
+  await list.reload()
+}
 
 // Editable copy of search, ordering and states: applied on submit, not on every keystroke.
 const FIELDS = ['search', 'ordering', 'enabled', 'auto_download'] as const
@@ -83,9 +99,9 @@ const status = (w: Watch) => [
         <h1>{{ t('watches.title') }}</h1>
         <p class="page-head__sub">{{ t('watches.intro') }}</p>
       </div>
-      <RouterLink class="btn btn--primary" :to="{ name: 'watches-new' }">
+      <BaseButton @click="creating = true">
         <AppIcon name="plus" />{{ t('watches.new') }}
-      </RouterLink>
+      </BaseButton>
     </header>
     <FilterPanel>
       <form class="watches__filters" @submit.prevent="apply">
@@ -166,6 +182,15 @@ const status = (w: Watch) => [
         {{ t('watches.next') }}
       </BaseButton>
     </nav>
+    <BaseDialog
+      :model-value="creating"
+      size="wide"
+      :title="t('watches.form.createTitle')"
+      @update:model-value="closeForm"
+    >
+      <!-- Mounted only while open, so every opening starts from an empty form. -->
+      <WatchForm v-if="creating" @saved="created" />
+    </BaseDialog>
   </section>
 </template>
 

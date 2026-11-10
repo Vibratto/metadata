@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute, useRouter } from 'vue-router'
 
 import { ApiError, api } from '../../api/client'
 import { errorText } from '../../api/errors'
@@ -22,19 +21,19 @@ const FIELDS = ['name', 'interval_hours', 'artist_ids'] as const
 type Field = (typeof FIELDS)[number]
 
 /**
- * Create and edit a new-release watch. API validation errors show next to their field.
+ * Form to create a new-release watch or, with `watchId`, to edit one. It lives inside a
+ * dialog of the list and of the detail. API validation errors show next to their field.
  */
+const props = defineProps<{ watchId?: number | string }>()
+const emit = defineEmits<{ saved: [watch: Watch] }>()
 const { t } = useI18n()
-const route = useRoute()
-const router = useRouter()
-const id = route.params.id as string | undefined
+const id = props.watchId
 
 const name = ref('')
 const interval = ref('24')
 const autoDownload = ref(false)
 const enabled = ref(true)
 const chosen = ref<Pick<Credit, 'id' | 'name'>[]>([])
-const original = ref('')
 
 const query = ref('')
 const results = ref<Artist[] | null>(null)
@@ -46,7 +45,7 @@ onMounted(async () => {
   if (!id) return
   try {
     const watch = await api<Watch>(`/api/v1/watches/${id}/`)
-    name.value = original.value = watch.name
+    name.value = watch.name
     interval.value = String(watch.interval_hours)
     autoDownload.value = Boolean(watch.auto_download)
     enabled.value = Boolean(watch.enabled)
@@ -118,7 +117,7 @@ async function save(): Promise<void> {
       method: id ? 'PATCH' : 'POST',
       body,
     })
-    await router.push({ name: 'watch', params: { id: watch.id } })
+    emit('saved', watch)
   } catch (e) {
     showErrors(e)
   }
@@ -126,10 +125,7 @@ async function save(): Promise<void> {
 </script>
 
 <template>
-  <section class="watch-form">
-    <h1>
-      {{ id ? t('watches.form.editTitle', { name: original }) : t('watches.form.createTitle') }}
-    </h1>
+  <div class="watch-form">
     <BaseAlert v-if="error" variant="error">{{ error }}</BaseAlert>
 
     <fieldset class="watch-form__fields">
@@ -202,13 +198,8 @@ async function save(): Promise<void> {
       </section>
     </fieldset>
 
-    <div class="watch-form__actions">
-      <BaseButton type="submit" form="watch-form">{{ t('watches.form.save') }}</BaseButton>
-      <RouterLink :to="id ? { name: 'watch', params: { id } } : { name: 'watches' }">
-        {{ t('watches.form.cancel') }}
-      </RouterLink>
-    </div>
-  </section>
+    <BaseButton type="submit" form="watch-form">{{ t('watches.form.save') }}</BaseButton>
+  </div>
 </template>
 
 <style scoped>
@@ -218,7 +209,9 @@ form,
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  max-width: 40rem;
+}
+.watch-form > .btn {
+  align-self: flex-start;
 }
 .artists__chosen,
 .artists__results {
@@ -253,16 +246,5 @@ form,
   margin: 0;
   padding: 0;
   border: 0;
-}
-
-.watch-form__actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-.watch-form__actions a {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--touch-target);
 }
 </style>
