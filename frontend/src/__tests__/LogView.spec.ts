@@ -209,13 +209,24 @@ describe('Activity tab', () => {
       }),
     )
     const { wrapper } = await mountLog('/log?page=2')
+    // The pager appears when the answer arrives; on a slow machine, after mounting.
+    await vi.waitFor(() => expect(wrapper.findAll('.pager button')).toHaveLength(2))
     const [previous, next] = wrapper.findAll('.pager button')
-    // “Previous” enables when the answer arrives; on a slow machine, after mounting.
-    await vi.waitFor(() => expect(previous.attributes('disabled')).toBeUndefined())
+    expect(previous.attributes('disabled')).toBeUndefined()
     expect(next.attributes('disabled')).toBeDefined()
     await previous.trigger('click')
     await flushPromises()
     await vi.waitFor(() => expect(seen.at(-1)).toEqual({ page: '1' }))
+  })
+
+  it('shows no pager when everything fits on one page', async () => {
+    server.use(
+      http.get('/api/v1/activity/entries/', () =>
+        HttpResponse.json({ count: 0, next: null, previous: null, results: [] }),
+      ),
+    )
+    const { wrapper } = await mountLog()
+    expect(wrapper.find('.pager').exists()).toBe(false)
   })
 
   it('shows the API error', async () => {

@@ -295,7 +295,11 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
 
     <VideoPreviewDialog :preview="preview" @close="closePreview" />
 
-    <nav class="library-list__pages" :aria-label="t('library.pages')">
+    <nav
+      v-if="list.hasPrevious || list.hasNext"
+      class="library-list__pages"
+      :aria-label="t('library.pages')"
+    >
       <BaseButton
         variant="secondary"
         :disabled="!list.hasPrevious"

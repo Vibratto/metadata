@@ -64,7 +64,8 @@ describe('LibraryView', () => {
     expect(wrapper.get('[aria-current="page"]').text()).toBe('Artists')
     const link = wrapper.findAll('a').find((a) => a.text() === 'Daft Punk')!
     expect(link.attributes('href')).toBe('/library/artists/1')
-    expect(wrapper.text()).toContain('Page 1 · 2 in total')
+    // Everything fits on one page: no pager.
+    expect(wrapper.find('.library-list__pages').exists()).toBe(false)
   })
 
   it('switches tab and shows artists, duration and whether it is downloaded', async () => {
