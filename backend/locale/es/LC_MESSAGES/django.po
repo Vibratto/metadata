@@ -130,9 +130,8 @@ msgstr "La copia choca con esta biblioteca: %(count)d elementos coinciden con ot
 msgid "The backup has download paths outside the library."
 msgstr "La copia tiene rutas de descarga fuera de la biblioteca."
 
-#, python-format
-msgid "The backup has invalid data: %(error)s"
-msgstr "La copia tiene datos no válidos: %(error)s"
+msgid "The backup has invalid data."
+msgstr "La copia tiene datos no válidos."
 
 msgid "The connection failed."
 msgstr "Ha fallado la conexión."
