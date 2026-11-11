@@ -25,7 +25,7 @@ async function withRouter(component: object, path = '/dashboard') {
 
 describe('AppIcon', () => {
   it('is decorative: the text next to it already says what it is', () => {
-    const svg = render(AppIcon, { props: { name: 'library' } }).get('svg')
+    const svg = render(AppIcon, { props: { name: 'disc' } }).get('svg')
     expect(svg.attributes('aria-hidden')).toBe('true')
     expect(svg.find('path').exists()).toBe(true)
   })
@@ -99,7 +99,7 @@ describe('JobsIndicator', () => {
   it('says how many jobs are running and links to them', async () => {
     const { w } = await withRouter(JobsIndicator)
     await vi.waitFor(() => expect(w.text()).toBe('1 running job'))
-    expect(w.get('a').attributes('href')).toBe('/log?tab=jobs')
+    expect(w.get('a').attributes('href')).toBe('/dashboard')
     w.unmount()
   })
 

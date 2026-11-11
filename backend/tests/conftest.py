@@ -8,6 +8,8 @@ import pytest
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
 
+from jobs import runner
+from jobs.models import JobRun
 from proxies import routing
 
 USERNAME = "owner"
@@ -32,6 +34,14 @@ def api(owner: User) -> APIClient:
     client = APIClient()
     client.force_login(owner)
     return client
+
+
+@pytest.fixture(autouse=True)
+def noted_problems(monkeypatch: pytest.MonkeyPatch) -> Callable[[JobRun], list[dict[str, str]]]:
+    """What a run still open could not do. Each test starts with nothing noted."""
+    noted: dict[int, list[dict[str, str]]] = {}
+    monkeypatch.setattr(runner, "_problems", noted)
+    return lambda run: noted.get(run.pk, [])
 
 
 @pytest.fixture(autouse=True)

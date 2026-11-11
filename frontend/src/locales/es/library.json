@@ -78,7 +78,9 @@
       "find": "Buscar",
       "add": "Añadir",
       "save": "Guardar artistas",
-      "done": "Artistas actualizados."
+      "done": "Artistas actualizados.",
+      "update": "Actualizar discografía",
+      "confirm": "¿Buscar los lanzamientos nuevos de {name} y añadirlos a la biblioteca?"
     },
     "history": {
       "title": "Historial",
@@ -156,7 +158,24 @@
     "also_on": "En otro álbum | En otros {n} álbumes",
     "related": {
       "intro": "Artistas relacionados con los que has importado. Solo se guarda su perfil; importa la discografía de los que quieras.",
-      "import": "Importar discografía"
+      "import": "Importar discografía",
+      "confirm": "¿Importar todos los álbumes, sencillos y canciones de {name}? Puede tardar unos minutos.",
+      "suggested": "Sugerido"
+    },
+    "downloads": {
+      "all": "Descargar todas las pendientes",
+      "chosen": "Descargar seleccionadas",
+      "selected": "{count} canción seleccionada | {count} canciones seleccionadas",
+      "clear": "Quitar selección",
+      "running": "Hay una descarga en curso; puedes seguirla aquí.",
+      "pendingOnly": "Solo pendientes",
+      "select": "Seleccionar {title} para descargar",
+      "copy": "Se copiará de otro álbum"
+    },
+    "preview": {
+      "open": "Vista previa",
+      "of": "Vista previa de {title}",
+      "searching": "Buscando el vídeo…"
     }
   }
 }

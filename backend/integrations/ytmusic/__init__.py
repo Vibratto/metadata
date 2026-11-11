@@ -1,6 +1,11 @@
 """YouTube Music catalogue: artists, releases, tracks and lyrics."""
 
-from integrations.ytmusic.client import YTMusicClient, YTMusicError, parse_channel_id
+from integrations.ytmusic.client import (
+    YTMusicClient,
+    YTMusicError,
+    parse_channel_id,
+    parse_handle,
+)
 from integrations.ytmusic.models import (
     Album,
     Artist,
@@ -24,4 +29,5 @@ __all__ = [
     "YTMusicClient",
     "YTMusicError",
     "parse_channel_id",
+    "parse_handle",
 ]

@@ -11,6 +11,7 @@ import BaseAlert from '../components/BaseAlert.vue'
 import ProgressBar from '../components/ProgressBar.vue'
 import { progressOf, useJobsStore } from '../stores/jobs'
 import { useSessionStore } from '../stores/session'
+import { activitySentence } from './log/sentence'
 
 type ActivityLog = components['schemas']['ActivityLog']
 
@@ -25,7 +26,8 @@ const RECENT = 5
  * Dashboard: greeting, library summary, running jobs, next step and recent activity. Jobs are
  * polled only while mounted.
  */
-const { t, te, locale } = useI18n()
+const i18n = useI18n()
+const { t, te, locale } = i18n
 const jobs = useJobsStore()
 const session = useSessionStore()
 
@@ -67,7 +69,7 @@ async function refreshJobs(): Promise<void> {
   }
 }
 
-const NEXT_ICON = { wait: 'import', empty: 'library', download: 'download', watch: 'bell' } as const
+const NEXT_ICON = { wait: 'import', empty: 'disc', download: 'download', watch: 'bell' } as const
 
 function kindLabel(kind: string): string {
   return te(`dashboard.jobs.kind.${kind}`) ? t(`dashboard.jobs.kind.${kind}`) : kind
@@ -81,7 +83,7 @@ async function loadSummary(): Promise<void> {
   }
 }
 
-// Activity is an extra: if it fails the dashboard goes on without it (the Log reports it).
+// Activity is an extra: if it fails the dashboard goes on without it.
 async function loadRecent(): Promise<void> {
   try {
     const page = await api<{ results: ActivityLog[] }>('/api/v1/activity/entries/')
@@ -170,7 +172,11 @@ onUnmounted(() => clearInterval(timer))
           <p v-else-if="nextStep.key !== 'wait'" class="next-step__actions">
             <RouterLink
               class="btn btn--accent"
-              :to="{ name: nextStep.key === 'download' ? 'download' : 'watches' }"
+              :to="
+                nextStep.key === 'download'
+                  ? { name: 'library', query: { tab: 'tracks', downloaded: 'false' } }
+                  : { name: 'watches' }
+              "
               >{{ t(`dashboard.next.${nextStep.key}.action`) }}</RouterLink
             >
           </p>
@@ -185,11 +191,10 @@ onUnmounted(() => clearInterval(timer))
         <p v-if="recent.length === 0" class="card__empty">{{ t('dashboard.recent.empty') }}</p>
         <ul v-else>
           <li v-for="entry in recent" :key="entry.id">
-            <span class="recent__icon" aria-hidden="true"><AppIcon name="log" /></span>
+            <span class="recent__icon" aria-hidden="true"><AppIcon name="history" /></span>
             <span class="recent__text">
-              <span class="mono">{{ entry.action }}</span>
+              <span class="recent__what">{{ activitySentence(entry, i18n) }}</span>
               <small>
-                {{ entry.username || t('log.system') }} ·
                 {{
                   new Date(entry.created_at).toLocaleString(locale, {
                     dateStyle: 'medium',
@@ -223,7 +228,7 @@ onUnmounted(() => clearInterval(timer))
 .dashboard__date::first-letter {
   text-transform: uppercase;
 }
-/* Mobile-first: two columns of totals on mobile and four from 600 px. */
+/* Mobile-first: two columns of totals on mobile; from 600 px, as many as fit in a row. */
 .stats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -359,7 +364,7 @@ h2.card__head {
   flex-direction: column;
   min-width: 0;
 }
-.recent__text .mono {
+.recent__what {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -371,7 +376,7 @@ h2.card__head {
 
 @media (min-width: 600px) {
   .stats {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
     gap: var(--space-3);
   }
 }

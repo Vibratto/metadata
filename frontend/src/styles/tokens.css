@@ -36,7 +36,9 @@
   --space-3: 1rem;
   --space-4: 1.5rem;
   --space-5: 2.5rem;
-  --radius-sm: 0.625rem;
+  /* Widest the top bar and the page content get; both are centred with it. */
+  --content-width: 72rem;
+  --radius-sm: 0.5rem;
   --radius: 0.75rem;
   --radius-lg: 1.125rem;
   --font-family: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;

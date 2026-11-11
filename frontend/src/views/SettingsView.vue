@@ -8,6 +8,7 @@ import type { components } from '../api/schema'
 import BaseAlert from '../components/BaseAlert.vue'
 import BaseButton from '../components/BaseButton.vue'
 import BaseField from '../components/BaseField.vue'
+import BaseSelect from '../components/BaseSelect.vue'
 
 type Preference = components['schemas']['Preference']
 
@@ -17,7 +18,7 @@ const KEYS = ['download.format', 'download.folder', 'download.name_template', TH
 type Key = (typeof KEYS)[number]
 
 // Same as `integrations.audio.FORMATS`: the API only validates the type, not the value.
-const FORMATS = ['mp3', 'm4a', 'flac', 'opus']
+const FORMATS = ['opus', 'mp3', 'm4a', 'flac']
 // Placeholders of `integrations.audio.render_path`; passed as a parameter because
 // vue-i18n would read the braces in the text as interpolations.
 const PLACEHOLDERS = '{albumartist} {artist} {album} {disc} {track} {title} {year}'
@@ -125,20 +126,12 @@ async function save(): Promise<void> {
     <BaseAlert v-if="error" variant="error">{{ error }}</BaseAlert>
 
     <form name="settings" @submit.prevent="save">
-      <div class="select">
-        <label for="settings-format">{{ t('settings.format') }}</label>
-        <select
-          id="settings-format"
-          v-model="values['download.format']"
-          :aria-invalid="fieldErrors['download.format'] ? 'true' : undefined"
-          :aria-describedby="fieldErrors['download.format'] ? 'settings-format-error' : undefined"
-        >
-          <option v-for="f in FORMATS" :key="f" :value="f">{{ f }}</option>
-        </select>
-        <p v-if="fieldErrors['download.format']" id="settings-format-error" class="select__error">
-          {{ fieldErrors['download.format'] }}
-        </p>
-      </div>
+      <BaseSelect
+        v-model="values['download.format']"
+        :label="t('settings.format')"
+        :options="FORMATS.map((value) => ({ value, label: value }))"
+        :error="fieldErrors['download.format']"
+      />
       <BaseField
         v-model="values['download.folder']"
         :label="t('settings.folder')"
@@ -224,18 +217,7 @@ form {
   flex-direction: column;
   gap: var(--space-3);
   max-width: 32rem;
-}
-.select select {
-  display: block;
-  width: 100%;
-  margin-top: var(--space-1);
-}
-.select select[aria-invalid='true'] {
-  border-color: var(--color-danger);
-}
-.select__error {
-  margin: var(--space-1) 0 0;
-  color: var(--color-danger);
+  margin-inline: auto;
 }
 .hint {
   margin: 0;

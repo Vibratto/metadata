@@ -14,7 +14,7 @@ and organised, ready for a player such as Navidrome or Jellyfin.
   artist picture and cover art.
 - **Related artists** are saved as profiles in their own tab. The big ones (by monthly
   listeners; the threshold is a setting) come with a suggestion to import their discography.
-- **Download** the audio as mp3, m4a, opus or flac, tagged, with ReplayGain and a naming
+- **Download** the audio as opus (the default), mp3, m4a or flac, tagged, with ReplayGain and a naming
   template you choose.
 - **Lyrics**, synced when available, from LRCLIB and YouTube Music.
 - **New releases**: watch artists and bring in what they publish, optionally downloading it.

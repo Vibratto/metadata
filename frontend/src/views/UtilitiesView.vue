@@ -123,6 +123,7 @@ const start = () => job.start('maintenance', { operations: operations.value })
   flex-direction: column;
   gap: var(--space-3);
   max-width: 40rem;
+  margin-inline: auto;
 }
 fieldset {
   margin: 0;

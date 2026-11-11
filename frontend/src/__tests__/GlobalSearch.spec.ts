@@ -7,7 +7,7 @@ import { messages } from '../locales'
 import { server } from '../mocks/server'
 import { routes } from '../router'
 import { render } from './helpers'
-import { sessionPinia } from './viewHelpers'
+import { choose, chosen, sessionPinia } from './viewHelpers'
 
 async function mount(path = '/dashboard') {
   const pinia = sessionPinia()
@@ -25,14 +25,16 @@ async function mount(path = '/dashboard') {
 }
 
 const options = (w: Awaited<ReturnType<typeof mount>>['w']) =>
-  w.findAll('[role="option"]').map((o) => o.text())
+  w.findAll('.global-search__panel [role="option"]').map((o) => o.text())
 
 async function type(w: Awaited<ReturnType<typeof mount>>['w'], text: string) {
   await w.get('input[role="combobox"]').setValue(text)
   await vi.waitFor(() =>
     expect(w.get('input[role="combobox"]').attributes('aria-expanded')).toBe('true'),
   )
-  await vi.waitFor(() => expect(w.findAll('[role="option"]').length).toBeGreaterThan(0))
+  await vi.waitFor(() =>
+    expect(w.findAll('.global-search__panel [role="option"]').length).toBeGreaterThan(0),
+  )
 }
 
 afterEach(() => server.events.removeAllListeners())
@@ -47,7 +49,7 @@ describe('GlobalSearch', () => {
   })
 
   it('with “All” it shows the groups with their counts, from any view', async () => {
-    const { w } = await mount('/download')
+    const { w } = await mount('/import')
     await type(w, 'disc')
     const groups = w.findAll('[role="group"]')
     expect(groups.map((g) => g.attributes('aria-label'))).toEqual(['Artists', 'Albums', 'Tracks'])
@@ -58,7 +60,7 @@ describe('GlobalSearch', () => {
 
   it('the scope picker narrows the search to one kind', async () => {
     const { w, queries } = await mount()
-    await w.get('select').setValue('albums')
+    await choose(w, 'Where to search', 'Albums')
     await type(w, 'disc')
     expect(queries.at(-1)).toMatchObject({ type: 'albums' })
     expect(w.findAll('[role="group"]').map((g) => g.attributes('aria-label'))).toEqual(['Albums'])
@@ -67,7 +69,7 @@ describe('GlobalSearch', () => {
 
   it('in the Library the default scope is the open tab', async () => {
     const { w } = await mount('/library?tab=tracks')
-    expect((w.get('select').element as HTMLSelectElement).value).toBe('tracks')
+    expect(chosen(w, 'Where to search')).toBe('Tracks')
     w.unmount()
   })
 
@@ -75,7 +77,7 @@ describe('GlobalSearch', () => {
     const { w, router } = await mount()
     await type(w, 'disc')
     await w
-      .findAll('[role="option"]')
+      .findAll('.global-search__panel [role="option"]')
       .find(
         (o) =>
           o.text().includes('Discovery') &&
@@ -93,7 +95,7 @@ describe('GlobalSearch', () => {
     const { w, router } = await mount()
     await type(w, 'disc')
     await w
-      .findAll('[role="option"]')
+      .findAll('.global-search__panel [role="option"]')
       .find((o) => o.text() === 'See all 2 albums')!
       .trigger('mousedown')
     await flushPromises()
@@ -112,7 +114,7 @@ describe('GlobalSearch', () => {
 
   it("Enter with a chosen scope opens that scope's tab", async () => {
     const { w, router } = await mount()
-    await w.get('select').setValue('tracks')
+    await choose(w, 'Where to search', 'Tracks')
     await w.get('input[role="combobox"]').setValue('luz')
     await w.get('form').trigger('submit')
     await flushPromises()
@@ -126,11 +128,13 @@ describe('GlobalSearch', () => {
     expect(input.attributes('aria-expanded')).toBe('false')
     await type(w, 'disc')
     expect(input.attributes('aria-expanded')).toBe('true')
-    expect(input.attributes('aria-controls')).toBe(w.get('[role="listbox"]').attributes('id'))
+    expect(input.attributes('aria-controls')).toBe(
+      w.get('.global-search__panel [role="listbox"]').attributes('id'),
+    )
     expect(w.get('[aria-live="polite"]').text()).not.toBe('')
     await input.trigger('keydown', { key: 'ArrowDown' })
     expect(input.attributes('aria-activedescendant')).toBe(
-      w.findAll('[role="option"]')[0]!.attributes('id'),
+      w.findAll('.global-search__panel [role="option"]')[0]!.attributes('id'),
     )
     await input.trigger('keydown', { key: 'Escape' })
     expect(input.attributes('aria-expanded')).toBe('false')

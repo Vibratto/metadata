@@ -6,6 +6,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { api } from '../api/client'
 import { type Kind, KINDS } from '../views/library/kinds'
 import AppIcon from './AppIcon.vue'
+import BaseSelect from './BaseSelect.vue'
 import CoverArt from './CoverArt.vue'
 
 /**
@@ -62,6 +63,9 @@ const entries = computed<Entry[]>(() =>
       { id: `${id}-${kind}-more`, kind, more: group.count },
     ]
   }),
+)
+const scopes = computed(() =>
+  (['all', ...KINDS] as Scope[]).map((value) => ({ value, label: t(`search.scope.${value}`) })),
 )
 const shown = computed(() => KINDS.filter((k) => groups.value[k]?.results.length))
 const entriesOf = (kind: Kind) => entries.value.filter((e) => e.kind === kind)
@@ -156,7 +160,8 @@ function onKeydown(e: KeyboardEvent): void {
 
 function onKey(e: KeyboardEvent): void {
   const target = e.target as HTMLElement
-  if (e.key !== '/' || target.closest('input, textarea, select, [contenteditable]')) return
+  if (e.key !== '/' || target.closest('input, textarea, [role="combobox"], [contenteditable]'))
+    return
   e.preventDefault()
   input.value?.focus()
 }
@@ -175,11 +180,13 @@ onUnmounted(() => {
 <template>
   <form class="global-search" role="search" @submit.prevent="submit" @focusout="onFocusOut">
     <label :for="id" class="sr-only">{{ t('search.label') }}</label>
-    <label :for="`${id}-scope`" class="sr-only">{{ t('search.scopeLabel') }}</label>
-    <select :id="`${id}-scope`" v-model="scope" class="global-search__scope">
-      <option value="all">{{ t('search.scope.all') }}</option>
-      <option v-for="k in KINDS" :key="k" :value="k">{{ t(`search.scope.${k}`) }}</option>
-    </select>
+    <BaseSelect
+      v-model="scope"
+      class="global-search__scope"
+      hide-label
+      :label="t('search.scopeLabel')"
+      :options="scopes"
+    />
     <div class="global-search__field">
       <AppIcon name="search" />
       <input
@@ -249,7 +256,7 @@ onUnmounted(() => {
   flex: 1;
   align-items: center;
   gap: var(--space-2);
-  max-width: 34rem;
+  max-width: 40rem;
   color: var(--color-faint);
 }
 .global-search__scope {

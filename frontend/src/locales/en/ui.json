@@ -10,7 +10,9 @@
     },
     "job": {
       "progress": "Job progress",
-      "lines": "Job log",
+      "current": "Now: {item}",
+      "problems": "Could not be completed ({count})",
+      "more": "…and {count} more",
       "stop": "Stop",
       "status": {
         "pending": "Pending",

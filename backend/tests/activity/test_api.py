@@ -1,4 +1,4 @@
-"""Activity and technical log API."""
+"""Activity API."""
 
 from datetime import timedelta
 from unittest.mock import patch
@@ -6,7 +6,6 @@ from unittest.mock import patch
 import pytest
 from django.contrib.auth.models import User
 from django.utils import timezone
-from django_db_logger.models import StatusLog
 from rest_framework.test import APIClient
 
 from activity.models import ActivityLog
@@ -16,12 +15,10 @@ from core.models import AppendOnlyError
 pytestmark = pytest.mark.django_db
 
 ENTRIES = "/api/v1/activity/entries/"
-LOGS = "/api/v1/activity/logs/"
 
 
-@pytest.mark.parametrize("url", [ENTRIES, LOGS])
-def test_a_session_is_required(anonymous: APIClient, url: str) -> None:
-    assert anonymous.get(url).status_code == 403
+def test_a_session_is_required(anonymous: APIClient) -> None:
+    assert anonymous.get(ENTRIES).status_code == 403
 
 
 def test_entry_has_user_action_object_and_detail(api: APIClient, owner: User) -> None:
@@ -85,26 +82,3 @@ def test_entries_are_read_only(api: APIClient, three_entries: list[ActivityLog])
     assert api.patch(url, {"action": "x"}, format="json").status_code == 405
     with pytest.raises(AppendOnlyError):
         three_entries[0].delete()
-
-
-def test_logs_are_filtered_and_searched(api: APIClient) -> None:
-    StatusLog.objects.create(logger_name="jobs.runner", level=40, msg="[job 7] network failure")
-    StatusLog.objects.create(logger_name="accounts", level=20, msg="[job 3] started")
-    StatusLog.objects.create(logger_name="jobs.runner", level=30, msg="no job")
-
-    def messages(query: dict[str, str | int]) -> set[str]:
-        return {row["msg"] for row in api.get(LOGS, query).json()["results"]}
-
-    assert messages({"min_level": 30}) == {"[job 7] network failure", "no job"}
-    assert messages({"module": "accounts"}) == {"[job 3] started"}
-    assert messages({"search": "NETWORK"}) == {"[job 7] network failure"}
-    assert messages({"task": 7}) == {"[job 7] network failure"}
-    assert len(messages({"date_from": timezone.now().date().isoformat()})) == 3
-
-
-def test_logs_are_read_only(api: APIClient) -> None:
-    entry = StatusLog.objects.create(logger_name="x", level=20, msg="m")
-    url = f"{LOGS}{entry.pk}/"
-    assert api.get(url).json()["msg"] == "m"
-    assert api.delete(url).status_code == 405
-    assert api.patch(url, {"msg": "n"}, format="json").status_code == 405

@@ -7,6 +7,7 @@ library (see :func:`check_fits`) is refused as a whole.
 """
 
 import json
+import logging
 import tempfile
 from collections import defaultdict
 from io import StringIO
@@ -32,9 +33,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from activity.services import log_activity
+from core.errors import UserError
 from core.serializers import DetailSerializer
 from jobs import runner
 from jobs.serializers import JobRunSerializer
+
+logger = logging.getLogger(__name__)
 
 #: Library models, in dependency order. History tables are left out: they point to users
 #: that do not exist on another installation.
@@ -61,7 +65,7 @@ PREVIEW_MODELS = {
 UPLOAD_PREFIX = "vibratto-restore-"
 
 
-class BackupError(ValueError):
+class BackupError(UserError):
     """The file is not a valid library backup."""
 
 
@@ -95,8 +99,9 @@ def parse_backup(data: bytes) -> list[tuple[dict[str, Any], Model]]:
     try:
         objects = [d.object for d in django_serializers.deserialize("python", entries)]
     except (DeserializationError, FieldDoesNotExist) as error:
-        message = _("The backup has invalid data: %(error)s") % {"error": error}
-        raise BackupError(message) from None
+        # What failed names models and fields: it is for the server log, not for the user.
+        logger.warning("Invalid backup: %s", error)
+        raise BackupError(_("The backup has invalid data.")) from None
     return list(zip(entries, objects, strict=True))
 
 

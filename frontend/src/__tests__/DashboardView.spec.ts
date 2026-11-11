@@ -40,14 +40,14 @@ describe('DashboardView', () => {
     )
   })
 
-  it('shows recent activity and links to the Log', async () => {
+  it('tells recent activity in sentences and links to all of it', async () => {
     const { wrapper } = await mountView(DashboardView, '/dashboard')
     const recent = () => wrapper.get('.recent')
     await vi.waitFor(() => expect(recent().findAll('li')).toHaveLength(2))
     expect(recent().get('h2').text()).toBe('Recent activity')
-    expect(recent().findAll('li')[0]!.text()).toContain('catalog.artist.updated')
-    expect(recent().findAll('li')[0]!.text()).toContain('demo')
-    expect(recent().findAll('li')[1]!.text()).toContain('System')
+    expect(recent().findAll('li')[0]!.text()).toContain('Edited an album')
+    expect(recent().findAll('li')[1]!.text()).toContain('Download finished. Tracks downloaded: 3')
+    expect(recent().text()).not.toContain('catalog.')
     expect(recent().get('a').attributes('href')).toBe('/log')
   })
 
@@ -153,7 +153,7 @@ describe('DashboardView', () => {
     it('with tracks left to download it suggests downloading', async () => {
       const step = await next()
       expect(step.text()).toContain('319')
-      expect(step.get('a').attributes('href')).toBe('/download')
+      expect(step.get('a').attributes('href')).toBe('/library?tab=tracks&downloaded=false')
     })
 
     it('with everything downloaded it suggests watching new releases', async () => {

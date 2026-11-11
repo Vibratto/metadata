@@ -109,6 +109,7 @@ form {
   flex-direction: column;
   gap: var(--space-3);
   max-width: 32rem;
+  margin-inline: auto;
 }
 input[type='file'] {
   min-height: var(--touch-target);

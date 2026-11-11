@@ -2,7 +2,7 @@ import { afterAll, afterEach, beforeAll } from 'vitest'
 
 import { server } from '../mocks/server'
 
-// jsdom no implementa showModal/close de <dialog>.
+// jsdom does not implement showModal/close on <dialog>.
 Object.assign(HTMLDialogElement.prototype, {
   showModal(this: HTMLDialogElement) {
     this.setAttribute('open', '')

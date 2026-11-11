@@ -10,7 +10,7 @@ import { server } from '../mocks/server'
 import { routes } from '../router'
 import { authGuard } from '../router/guards'
 import ProxiesView from '../views/ProxiesView.vue'
-import { fill, mountView } from './viewHelpers'
+import { choose, fill, mountView } from './viewHelpers'
 
 type Wrapper = Awaited<ReturnType<typeof mountView>>['wrapper']
 
@@ -101,7 +101,7 @@ describe('ProxiesView', () => {
     const { wrapper } = await mount()
     await click(wrapper, 'Add proxy')
     await fill(wrapper, 'Address (http, https, socks5 or socks5h)', 'http://[2001:db8::1]:3128')
-    await fill(wrapper, 'IP version', 'ipv6')
+    await choose(wrapper, 'IP version', 'IPv6')
     await wrapper.get('form[name="proxy"]').trigger('submit')
     await flushPromises()
     expect(sent).toEqual({ url: 'http://[2001:db8::1]:3128', ip_version: 'ipv6', enabled: true })
@@ -242,7 +242,7 @@ describe('ProxiesView', () => {
     expect(wrapper.find('dialog[open] h2').text()).toBe('Add several proxies')
     const text = 'a.example:80\nb.example:81\na.example:80\nc.example'
     await fill(wrapper, 'Proxy list (one per line)', text)
-    await fill(wrapper, 'IP type for all lines', 'ipv6')
+    await choose(wrapper, 'IP type for all lines', 'IPv6')
     await wrapper.get('form[name="bulk"] input[type="checkbox"]').setValue(false)
     await wrapper.get('form[name="bulk"]').trigger('submit')
     await flushPromises()

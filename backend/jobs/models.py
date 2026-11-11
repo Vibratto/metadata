@@ -7,7 +7,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from core.models import AppendOnlyError, AppendOnlyModel
+from core.models import AppendOnlyError
 
 
 class JobRun(models.Model):
@@ -73,30 +73,3 @@ class JobRun(models.Model):
         ):
             raise AppendOnlyError("A finished run cannot be modified.")
         super().save(*args, **kwargs)
-
-
-class JobRunLine(AppendOnlyModel):
-    """One log line of a run."""
-
-    class Level(models.TextChoices):
-        """Severity of the line."""
-
-        INFO = "info", _("information")
-        WARNING = "warning", _("warning")
-        ERROR = "error", _("error")
-
-    run = models.ForeignKey(
-        JobRun, on_delete=models.PROTECT, related_name="lines", verbose_name=_("run")
-    )
-    position = models.PositiveIntegerField(_("position"))
-    level = models.CharField(_("level"), max_length=7, choices=Level.choices, default=Level.INFO)
-    message = models.TextField(_("message"))
-    created_at = models.DateTimeField(_("date"), default=timezone.now)
-
-    class Meta:
-        """Write order."""
-
-        ordering = ["run_id", "position"]
-        constraints = [
-            models.UniqueConstraint(fields=["run", "position"], name="jobrunline_run_position_uniq")
-        ]

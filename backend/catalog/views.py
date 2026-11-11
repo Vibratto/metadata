@@ -427,7 +427,9 @@ def _lookup(text: str) -> list[dict[str, Any]]:
     client = ytmusic_client()
     channel_id = ytm.parse_channel_id(text)
     if channel_id is None:
-        return [_lookup_result(artist) for artist in client.search_artists(text)]
+        # A handle link ("…/@name") carries no id: its name is searched like any other.
+        name = ytm.parse_handle(text) or text
+        return [_lookup_result(artist) for artist in client.search_artists(name)]
     page = client.get_artist(channel_id)
     albums = sum(1 for release in page.releases if release.kind == ytm.models.ALBUM)
     return [_lookup_result(page.artist, albums, len(page.releases) - albums)]

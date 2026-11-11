@@ -73,6 +73,11 @@ def _run(**params: Any) -> JobRun:
     return runner.start("download", params, None)
 
 
+def _counts(run: JobRun) -> dict[str, int]:
+    """The summary without the list of problems."""
+    return {key: value for key, value in run.summary.items() if key != "problems"}
+
+
 def test_downloads_converts_tags_and_records(fake_media: dict[str, Any], tmp_path: Path) -> None:
     track = TrackFactory(title="Song", duration=200, video_id="vvvvvvvvvvv")
     run = _run(track_ids=[track.pk])
@@ -81,12 +86,12 @@ def test_downloads_converts_tags_and_records(fake_media: dict[str, Any], tmp_pat
     assert run.summary == {"downloaded": 1, "failed": 0, "skipped": 0}
     download = Download.objects.get(track=track)
     # Relative, portable, with the id.
-    assert download.file_path.endswith(f"-song-{track.pk}.mp3")
+    assert download.file_path.endswith(f"-song-{track.pk}.opus")
     assert not Path(download.file_path).is_absolute()
     assert (tmp_path / "library" / download.file_path).read_bytes() == b"audio"
-    assert download.audio_format == "mp3"
+    assert download.audio_format == "opus"
     assert download.source_url == "https://music.youtube.com/watch?v=vvvvvvvvvvv"
-    assert fake_media["tagged"][0][0] == "audio.mp3"
+    assert fake_media["tagged"][0][0] == "audio.opus"
     assert fake_media["tagged"][0][1].title == "Song"
     # The track carries its video id, so nothing is searched.
     assert fake_media["fetched"] == [("vvvvvvvvvvv", None)]
@@ -130,8 +135,10 @@ def test_failure_of_one_track_does_not_stop_the_rest() -> None:
     fine = TrackFactory(title="Fine", duration=200)
     run = _run(track_ids=[broken.pk, fine.pk])
     assert run.status == JobRun.Status.SUCCEEDED
-    assert run.summary == {"downloaded": 1, "failed": 1, "skipped": 0}
-    assert run.lines.filter(level="error", message__contains="Broken").exists()
+    assert _counts(run) == {"downloaded": 1, "failed": 1, "skipped": 0}
+    assert run.summary["problems"] == [
+        {"item": "Broken", "reason": "No video matching this track was found."}
+    ]
 
 
 def test_track_without_matching_video_fails(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -283,7 +290,7 @@ def test_measures_each_track_and_updates_each_album_once(fake_media: dict[str, A
     run = _run(track_ids=[first.pk, second.pk, other.pk])
 
     assert run.summary == {"downloaded": 3, "failed": 0, "skipped": 0}
-    assert fake_media["measured"] == [["audio.mp3"]] * 3
+    assert fake_media["measured"] == [["audio.opus"]] * 3
     assert {row.lufs for row in DownloadLoudness.objects.all()} == {-14.0}
     assert DownloadLoudness.objects.count() == 3
     assert fake_media["tagged"][0][1].replaygain.track_gain_db == -4.0
@@ -302,8 +309,10 @@ def test_album_gain_failure_is_reported_without_failing_the_run(
     run = _run(track_ids=[track.pk])
 
     assert run.status == JobRun.Status.SUCCEEDED
-    assert run.summary == {"downloaded": 1, "failed": 0, "skipped": 0}
-    assert any("disco lleno" in line for line in run.lines.values_list("message", flat=True))
+    assert _counts(run) == {"downloaded": 1, "failed": 0, "skipped": 0}
+    (problem,) = run.summary["problems"]
+    assert problem["item"] == track.album.title
+    assert problem["reason"].startswith("The file could not be read or written.")
 
 
 def test_replaygain_off_measures_nothing(fake_media: dict[str, Any]) -> None:
@@ -335,9 +344,11 @@ def test_lyrics_failure_is_logged_and_the_download_still_succeeds(lrclib: FakeLr
     run = _run(track_ids=[track.pk])
 
     assert run.status == JobRun.Status.SUCCEEDED
-    assert run.summary == {"downloaded": 1, "failed": 0, "skipped": 0}
+    assert _counts(run) == {"downloaded": 1, "failed": 0, "skipped": 0}
     assert Download.objects.filter(track=track).exists()
-    assert any("LRCLIB is down" in m for m in run.lines.values_list("message", flat=True))
+    assert run.summary["problems"] == [
+        {"item": "Song", "reason": "Downloaded, but its lyrics could not be fetched."}
+    ]
 
 
 def test_lyrics_are_not_looked_up_when_turned_off(lrclib: FakeLrclib) -> None:

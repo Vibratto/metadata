@@ -9,7 +9,7 @@ from typing import Final
 from integrations.audio import DEFAULT_TEMPLATE
 
 DEFAULTS: Final[dict[str, object]] = {
-    "download.format": "mp3",
+    "download.format": "opus",
     "download.folder": "music",
     "download.name_template": DEFAULT_TEMPLATE,
     # The cover is stored once per album as cover.jpg; repeating it in every file only

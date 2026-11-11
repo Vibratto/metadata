@@ -19,7 +19,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <nav class="pager">
+  <nav v-if="list.hasPrevious || list.hasNext" class="pager">
     <BaseButton variant="secondary" :disabled="!list.hasPrevious" @click="list.goTo(list.page - 1)">
       {{ t('log.previous') }}
     </BaseButton>

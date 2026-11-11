@@ -22,7 +22,7 @@ const initials = computed(() => session.user?.username.slice(0, 2).toUpperCase()
 <template>
   <nav class="nav" :aria-label="t('nav.main')">
     <div class="nav__brand">
-      <span class="nav__logo"><AppIcon name="logo" /></span>{{ t('app.title') }}
+      {{ t('app.title') }}
     </div>
     <ul class="nav__main">
       <li v-for="r in entries.main" :key="r.name?.toString() ?? r.path">
@@ -196,18 +196,6 @@ a.router-link-active .icon {
     background: var(--color-surface);
     color: var(--color-text);
   }
-}
-.nav__logo {
-  display: grid;
-  place-items: center;
-  width: 1.875rem;
-  height: 1.875rem;
-  border-radius: 0.5625rem;
-  background: var(--color-logo-bg);
-  color: var(--color-accent-strong);
-}
-.nav__logo .icon {
-  stroke-width: 2.4;
 }
 .nav__avatar {
   display: grid;

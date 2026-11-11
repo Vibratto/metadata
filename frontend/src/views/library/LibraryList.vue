@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import AppIcon from '../../components/AppIcon.vue'
 import ActiveFilters, { type ActiveFilter } from '../../components/ActiveFilters.vue'
 import BaseAlert from '../../components/BaseAlert.vue'
 import BaseButton from '../../components/BaseButton.vue'
+import BaseDialog from '../../components/BaseDialog.vue'
 import BaseField from '../../components/BaseField.vue'
+import BaseSelect, { type SelectOption } from '../../components/BaseSelect.vue'
 import CoverArt from '../../components/CoverArt.vue'
 import EntityFilter from '../../components/EntityFilter.vue'
 import FilterPanel from '../../components/FilterPanel.vue'
@@ -14,6 +16,7 @@ import JobRunPanel from '../../components/JobRunPanel.vue'
 import ResponsiveList from '../../components/ResponsiveList.vue'
 import VideoPreviewDialog from '../../components/VideoPreviewDialog.vue'
 import { useVideoPreview } from '../../composables/useVideoPreview'
+import { useTrackDownloads } from './useTrackDownloads'
 import { entityName } from '../../composables/useEntityLabels'
 import { useJobRun } from '../../composables/useJobRun'
 import { usePagedList } from '../../composables/usePagedList'
@@ -45,13 +48,17 @@ const fixedQuery = (query: Record<string, string>): Record<string, string> => ({
 })
 const list = usePagedList<Item>(apiPath(kind), spec.filters, fixedQuery)
 
-// A related artist's discography is imported from its card; the list reloads when it is
-// done, because the artist then leaves this tab for the Artists one.
+// An artist's discography is imported from its card, after confirming. The list reloads
+// when it is done: a related artist then leaves its tab for the Artists one.
 const importJob = useJobRun()
-const importing = ref<number | null>(null)
-async function importDiscography(artist: Artist): Promise<void> {
-  importing.value = artist.id
-  await importJob.start('import', { artist_ids: [artist.ytmusic_id] })
+const asking = ref<Artist | null>(null)
+const importLabel = computed(() =>
+  t(props.tab === 'related' ? 'library.related.import' : 'library.artists.update'),
+)
+async function confirmImport(): Promise<void> {
+  const artist = asking.value
+  asking.value = null
+  if (artist) await importJob.start('import', { artist_ids: [artist.ytmusic_id] })
 }
 watch(
   () => importJob.active,
@@ -61,9 +68,23 @@ watch(
 )
 const { preview, showPreview, closePreview } = useVideoPreview()
 
+// Tracks are downloaded from their own list: every pending one, or the ticked ones.
+const downloads = useTrackDownloads(() => list.reload())
+const pendingOnly = computed(() => list.query.downloaded === 'false')
+onMounted(() => {
+  if (kind === 'tracks') void downloads.followActive()
+})
+
 // Editable copy of the simple filters: applied on submit, not on every keystroke.
 const fieldKeys = spec.fields.map((f) => f.key)
 const form = reactive<Record<string, string>>({})
+const orderings = computed<SelectOption[]>(() => [
+  { value: '', label: t('library.ordering.default') },
+  ...spec.orderings.map((value) => ({
+    value,
+    label: t(`library.ordering.${value.replace(/^-(.*)/, '$1_desc')}`),
+  })),
+])
 function sync(): void {
   for (const key of ['search', 'ordering', ...fieldKeys]) form[key] = list.query[key] ?? ''
 }
@@ -137,8 +158,7 @@ const artistLink = (credit: Credit) => ({
 })
 const year = (row: Item) => ('year' in row ? (row.year ?? '') : '')
 const audience = (row: Item) => ('subscribers' in row ? audienceText(row, locale.value, t) : '')
-const suggested = (row: Item): Artist | null =>
-  'suggest_import' in row && row.suggest_import ? row : null
+const suggested = (row: Item): boolean => 'suggest_import' in row && row.suggest_import
 /** Track and pending counts, when the API sends them. */
 const counts = (row: Item): string => {
   const r = row as { track_count?: number; pending_count?: number }
@@ -161,15 +181,11 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
           :debounce="300"
           :label="t('library.filters.search')"
         />
-        <label class="library-list__select">
-          {{ t('library.filters.ordering') }}
-          <select v-model="form.ordering">
-            <option value="">{{ t('library.ordering.default') }}</option>
-            <option v-for="o in spec.orderings" :key="o" :value="o">
-              {{ t(`library.ordering.${o.replace(/^-(.*)/, '$1_desc')}`) }}
-            </option>
-          </select>
-        </label>
+        <BaseSelect
+          v-model="form.ordering!"
+          :label="t('library.filters.ordering')"
+          :options="orderings"
+        />
         <EntityFilter
           v-if="spec.entities.includes('artist')"
           :model-value="list.query.artist ?? ''"
@@ -188,15 +204,18 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
           @update:model-value="setEntity('album', $event)"
         />
         <template v-for="f in spec.fields" :key="f.key">
-          <label v-if="f.type === 'select'" class="library-list__select">
-            {{ t(`library.filterLabels.${f.key}`) }}
-            <select v-model="form[f.key]">
-              <option value="">{{ t('library.filters.any') }}</option>
-              <option v-for="[value, text] in f.options" :key="value" :value="value">
-                {{ t(`library.options.${text}`) }}
-              </option>
-            </select>
-          </label>
+          <BaseSelect
+            v-if="f.type === 'select'"
+            v-model="form[f.key]!"
+            :label="t(`library.filterLabels.${f.key}`)"
+            :options="[
+              { value: '', label: t('library.filters.any') },
+              ...(f.options ?? []).map(([value, text]) => ({
+                value,
+                label: t(`library.options.${text}`),
+              })),
+            ]"
+          />
           <BaseField
             v-else
             v-model="form[f.key]!"
@@ -211,7 +230,32 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
     <ActiveFilters :filters="active" @remove="removeFilter" @clear="clearFilters" />
 
     <p v-if="tab === 'related'" class="library-list__intro">{{ t('library.related.intro') }}</p>
-    <JobRunPanel v-if="importing !== null" :job="importJob" />
+    <JobRunPanel v-if="kind === 'artists'" :job="importJob" />
+    <template v-if="kind === 'tracks'">
+      <div class="library-list__downloads">
+        <BaseButton
+          variant="secondary"
+          :aria-pressed="pendingOnly"
+          @click="list.update({ downloaded: pendingOnly ? '' : 'false' })"
+        >
+          {{ t('library.downloads.pendingOnly') }}
+        </BaseButton>
+        <BaseButton
+          variant="secondary"
+          :disabled="downloads.job.active"
+          @click="downloads.downloadAll()"
+        >
+          <AppIcon name="download" />{{ t('library.downloads.all') }}
+        </BaseButton>
+      </div>
+      <BaseAlert v-if="downloads.error.value" variant="error">
+        {{ downloads.error.value }}
+      </BaseAlert>
+      <BaseAlert v-if="downloads.job.active" variant="info">
+        {{ t('library.downloads.running') }}
+      </BaseAlert>
+      <JobRunPanel :job="downloads.job" />
+    </template>
     <BaseAlert v-if="list.error" variant="error">{{ list.error }}</BaseAlert>
     <p v-if="list.loading" role="status">{{ t('library.loading') }}</p>
     <template v-if="kind !== 'tracks'">
@@ -235,14 +279,16 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
             <template v-if="counts(row)"> · {{ counts(row) }}</template>
           </small>
           <small v-if="audience(row)">{{ audience(row) }}</small>
-          <BaseButton
-            v-if="tab === 'related' && suggested(row)"
-            variant="secondary"
-            :disabled="importJob.active"
-            @click="importDiscography(suggested(row)!)"
-          >
-            {{ t('library.related.import') }}
-          </BaseButton>
+          <template v-if="kind === 'artists'">
+            <span v-if="suggested(row)" class="chip">{{ t('library.related.suggested') }}</span>
+            <BaseButton
+              :variant="suggested(row) ? 'primary' : 'secondary'"
+              :disabled="importJob.active"
+              @click="asking = row as Artist"
+            >
+              {{ importLabel }}
+            </BaseButton>
+          </template>
         </li>
       </ul>
     </template>
@@ -253,12 +299,23 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
         </RouterLink>
       </template>
       <template #cell-title="{ row }">
+        <input
+          v-if="!cell(row, 'downloaded')"
+          type="checkbox"
+          class="library-list__pick"
+          :aria-label="t('library.downloads.select', { title: label(row) })"
+          :checked="downloads.selected.has(row.id)"
+          @change="downloads.toggle(row.id, ($event.target as HTMLInputElement).checked)"
+        />
         <CoverArt class="library-list__thumb" :name="label(row)" :src="image(row)" />
         <RouterLink :to="{ name: 'library-item', params: { kind, id: row.id } }">
           {{ label(row) }}
         </RouterLink>
         <span v-if="cell(row, 'also_on')" class="chip library-list__also">
           {{ t('library.also_on', { n: cell(row, 'also_on') as number }) }}
+        </span>
+        <span v-if="!cell(row, 'downloaded') && cell(row, 'copyable')" class="chip chip--ok">
+          {{ t('library.downloads.copy') }}
         </span>
       </template>
       <template #cell-artists="{ row }">
@@ -273,10 +330,10 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
       <template #cell-preview="{ row }">
         <BaseButton
           variant="secondary"
-          :aria-label="`${t('download.preview')}: ${label(row)}`"
+          :aria-label="`${t('library.preview.open')}: ${label(row)}`"
           @click="showPreview({ id: row.id, title: label(row) })"
         >
-          <AppIcon name="play" />{{ t('download.preview') }}
+          <AppIcon name="play" />{{ t('library.preview.open') }}
         </BaseButton>
       </template>
       <template #cell-downloaded="{ row }">
@@ -288,7 +345,43 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
 
     <VideoPreviewDialog :preview="preview" @close="closePreview" />
 
-    <nav class="library-list__pages" :aria-label="t('library.pages')">
+    <!-- Sticky bar with the download of the selection: at hand while scrolling the list. -->
+    <div v-if="downloads.selected.size" class="action-bar">
+      <span>{{
+        t('library.downloads.selected', { count: downloads.selected.size }, downloads.selected.size)
+      }}</span>
+      <BaseButton variant="ghost" @click="downloads.selected.clear()">
+        {{ t('library.downloads.clear') }}
+      </BaseButton>
+      <BaseButton
+        variant="accent"
+        :disabled="downloads.job.active"
+        @click="downloads.downloadSelected()"
+      >
+        <AppIcon name="download" />{{ t('library.downloads.chosen') }}
+      </BaseButton>
+    </div>
+
+    <BaseDialog
+      :model-value="asking !== null"
+      :title="importLabel"
+      @update:model-value="asking = null"
+    >
+      <p>
+        {{
+          t(tab === 'related' ? 'library.related.confirm' : 'library.artists.confirm', {
+            name: asking?.name,
+          })
+        }}
+      </p>
+      <BaseButton @click="confirmImport">{{ importLabel }}</BaseButton>
+    </BaseDialog>
+
+    <nav
+      v-if="list.hasPrevious || list.hasNext"
+      class="library-list__pages"
+      :aria-label="t('library.pages')"
+    >
       <BaseButton
         variant="secondary"
         :disabled="!list.hasPrevious"
@@ -326,11 +419,6 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
 .library-list__filters {
   display: grid;
   gap: var(--space-3);
-}
-.library-list__select {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4375rem;
 }
 .library-list__empty {
   padding: var(--space-5) var(--space-3);
@@ -394,6 +482,29 @@ const cell = (row: Item, key: string) => (row as Record<string, unknown>)[key]
   font-size: 0.8125rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* Quick filter and "download all", to the right above the track list. */
+.library-list__downloads {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+.library-list__downloads .btn[aria-pressed='true'] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+.library-list__pick {
+  margin-right: var(--space-2);
+  vertical-align: middle;
+}
+/* Above the card's stretched link, so they can be clicked. */
+.covers .btn,
+.covers .chip {
+  position: relative;
+  align-self: flex-start;
+  margin-top: var(--space-2);
 }
 .covers .covers__artist {
   position: relative;

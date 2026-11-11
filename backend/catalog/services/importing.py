@@ -23,18 +23,15 @@ from catalog.models import (
     RecordingArtist,
     Track,
 )
+from catalog.services.problems import report
 from integrations import ytmusic as ytm
 from integrations.ytmusic import YTMusicClient, YTMusicError
 from jobs import runner
-from jobs.models import JobRun, JobRunLine
+from jobs.models import JobRun
 from proxies.routing import proxied_session
 
 #: What a failed YouTube Music request can raise.
 FETCH_ERRORS = (YTMusicError, requests.RequestException)
-
-INFO = JobRunLine.Level.INFO
-WARNING = JobRunLine.Level.WARNING
-ERROR = JobRunLine.Level.ERROR
 
 
 def ytmusic_client() -> YTMusicClient:
@@ -71,7 +68,7 @@ class Importer:
                     return False
             except FETCH_ERRORS as error:
                 self.counts["failed_artists"] += 1
-                self._log(ERROR, _("Artist %(id)s: %(error)s"), id=channel_id, error=error)
+                report(self.run, _("Artist %(id)s") % {"id": channel_id}, error)
         return True
 
     def import_artist(self, channel_id: str) -> bool:
@@ -82,7 +79,6 @@ class Importer:
         """
         if BlockedItem.blocks(BlockedItem.Kind.ARTIST, channel_id):
             self.counts["blocked"] += 1
-            self._log(INFO, _("Artist %(id)s is blocked: skipped."), id=channel_id)
             return True
         page = self._client.get_artist(channel_id)
         artist, created = Artist.objects.get_or_create(
@@ -90,7 +86,6 @@ class Importer:
         )
         if created:
             self.counts["artists"] += 1
-        self._log(INFO, _("Artist “%(name)s”."), name=artist.name)
         update_profile(artist, page.artist)
         self._save_related(artist, page.related)
 
@@ -126,7 +121,7 @@ class Importer:
             return self.import_release(release)
         except FETCH_ERRORS as error:
             self.counts["failed_albums"] += 1
-            self._log(ERROR, _("Album “%(title)s”: %(error)s"), title=release.title, error=error)
+            report(self.run, release.title, error)
             return []
 
     def import_release(self, release: ytm.ReleaseRef) -> list[Track]:
@@ -137,7 +132,6 @@ class Importer:
         """
         if BlockedItem.blocks(BlockedItem.Kind.ALBUM, release.id):
             self.counts["blocked"] += 1
-            self._log(INFO, _("Album “%(title)s” is blocked: skipped."), title=release.title)
             return []
         if Album.objects.filter(ytmusic_id=release.id).exists():
             self.counts["skipped_albums"] += 1
@@ -154,12 +148,6 @@ class Importer:
             self._credit(AlbumArtist, "album", album, remote.artists)
             created = self._create_tracks(album, remote.tracks)
         self.counts["albums"] += 1
-        self._log(
-            INFO,
-            _("Album “%(title)s”: %(count)d tracks."),
-            title=album.title,
-            count=len(created),
-        )
         return created
 
     def complete_album(self, album: Album) -> list[Track]:
@@ -202,13 +190,6 @@ class Importer:
             self._credit(RecordingArtist, "recording", recording, remote.artists)
         else:
             self.counts["reused_recordings"] += 1
-            other = recording.tracks.select_related("album").first()
-            self._log(
-                INFO,
-                _("Track %(number)d is the same recording as on “%(album)s”."),
-                number=number,
-                album=other.album.title if other else "",
-            )
         self.counts["tracks"] += 1
         return Track.objects.create(
             album=album, recording=recording, title=remote.title, track_number=number
@@ -225,13 +206,6 @@ class Importer:
         if not on_disc.filter(track_number=wanted).exists():
             return wanted
         number = (on_disc.aggregate(last=Max("track_number"))["last"] or 0) + 1
-        self._log(
-            INFO,
-            _("Position %(wanted)d was taken, so “%(title)s” is now track %(number)d."),
-            title=remote.title,
-            wanted=wanted,
-            number=number,
-        )
         return number
 
     def _credit(
@@ -276,12 +250,7 @@ class Importer:
         try:
             self.complete_artist(artist)
         except FETCH_ERRORS as error:
-            self._log(
-                WARNING,
-                _("Artist “%(name)s” left incomplete: %(error)s"),
-                name=artist.name,
-                error=error,
-            )
+            report(self.run, artist.name, error)
 
     def complete_artist(self, artist: Artist) -> None:
         """Fill in an artist's profile from YouTube Music; never imports its music.
@@ -291,9 +260,6 @@ class Importer:
         """
         if artist.ytmusic_id:
             update_profile(artist, self._client.get_artist_profile(artist.ytmusic_id))
-
-    def _log(self, level: str, message: str, **values: Any) -> None:
-        runner.line(self.run, level, message % values)
 
 
 def update_profile(artist: Artist, remote: ytm.Artist) -> None:

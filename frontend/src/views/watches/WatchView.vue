@@ -11,6 +11,7 @@ import BaseButton from '../../components/BaseButton.vue'
 import BaseDialog from '../../components/BaseDialog.vue'
 import JobRunPanel from '../../components/JobRunPanel.vue'
 import ResponsiveList from '../../components/ResponsiveList.vue'
+import WatchForm from './WatchForm.vue'
 import { useJobRun } from '../../composables/useJobRun'
 import { usePagedList } from '../../composables/usePagedList'
 
@@ -29,6 +30,16 @@ const id = route.params.id as string
 const watch = ref<Watch | null>(null)
 const error = ref('')
 const confirming = ref(false)
+// An old ".../edit" link arrives as "?edit=1" and opens the dialog straight away.
+const editing = ref(route.query.edit === '1')
+function closeEditor(): void {
+  editing.value = false
+  if (route.query.edit) void router.replace({ query: { ...route.query, edit: undefined } })
+}
+function saved(updated: Watch): void {
+  watch.value = updated
+  closeEditor()
+}
 const runs = usePagedList<WatchRun>(`/api/v1/watches/${id}/runs/`)
 const job = useJobRun()
 
@@ -90,9 +101,9 @@ async function remove(): Promise<void> {
         >
           {{ t('watches.detail.check') }}
         </BaseButton>
-        <RouterLink class="watch__edit" :to="{ name: 'watches-edit', params: { id } }">
+        <BaseButton variant="secondary" @click="editing = true">
           {{ t('watches.detail.edit') }}
-        </RouterLink>
+        </BaseButton>
         <BaseButton variant="danger" @click="confirming = true">
           {{ t('watches.detail.delete') }}
         </BaseButton>
@@ -104,6 +115,15 @@ async function remove(): Promise<void> {
       >
         <p>{{ t('watches.detail.confirmText') }}</p>
         <BaseButton variant="danger" @click="remove">{{ t('watches.detail.confirm') }}</BaseButton>
+      </BaseDialog>
+      <BaseDialog
+        :model-value="editing"
+        size="wide"
+        :title="t('watches.form.editTitle', { name: watch.name })"
+        @update:model-value="closeEditor"
+      >
+        <!-- Mounted only while open, so every opening starts from the saved values. -->
+        <WatchForm v-if="editing" :watch-id="id" @saved="saved" />
       </BaseDialog>
     </template>
 
@@ -145,11 +165,5 @@ async function remove(): Promise<void> {
 }
 .watch__pages {
   justify-content: space-between;
-}
-.watch__edit {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--touch-target);
-  padding: 0 var(--space-3);
 }
 </style>

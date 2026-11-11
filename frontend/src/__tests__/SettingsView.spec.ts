@@ -10,7 +10,7 @@ import { server } from '../mocks/server'
 import { routes } from '../router'
 import { authGuard } from '../router/guards'
 import SettingsView from '../views/SettingsView.vue'
-import { fill, mountView } from './viewHelpers'
+import { choose, chosen, dropdown, fill, mountView } from './viewHelpers'
 
 const field = (wrapper: Awaited<ReturnType<typeof mountView>>['wrapper'], label: string) => {
   const id = wrapper
@@ -23,7 +23,7 @@ const field = (wrapper: Awaited<ReturnType<typeof mountView>>['wrapper'], label:
 describe('SettingsView', () => {
   it('loads the settings and links to the account', async () => {
     const { wrapper } = await mountView(SettingsView, '/settings')
-    expect((field(wrapper, 'Download format').element as HTMLSelectElement).value).toBe('mp3')
+    expect(chosen(wrapper, 'Download format')).toBe('opus')
     expect((field(wrapper, 'Download folder').element as HTMLInputElement).value).toBe('music')
     expect(wrapper.text()).toContain('{albumartist} {artist} {album} {disc} {track} {title} {year}')
     expect(wrapper.text()).toContain('{album} in the folders')
@@ -40,7 +40,7 @@ describe('SettingsView', () => {
       }),
     )
     const { wrapper } = await mountView(SettingsView, '/settings')
-    await field(wrapper, 'Download format').setValue('flac')
+    await choose(wrapper, 'Download format', 'flac')
     await fill(wrapper, 'Download folder', 'songs')
     await wrapper.get('form').trigger('submit')
     await flushPromises()
@@ -83,14 +83,16 @@ describe('SettingsView', () => {
     )
     const { wrapper } = await mountView(SettingsView, '/settings')
     await fill(wrapper, 'Naming template', '{nothing}')
-    await field(wrapper, 'Download format').setValue('opus')
+    await choose(wrapper, 'Download format', 'mp3')
     await fill(wrapper, 'Download folder', 'songs')
     await wrapper.get('form').trigger('submit')
     await flushPromises()
     const template = field(wrapper, 'Naming template')
     expect(template.attributes('aria-invalid')).toBe('true')
     expect(wrapper.text()).toContain('Invalid template.')
-    expect(field(wrapper, 'Download format').attributes('aria-describedby')).toBeTruthy()
+    const format = dropdown(wrapper, 'Download format').get('[role="combobox"]')
+    expect(format.attributes('aria-invalid')).toBe('true')
+    expect(format.attributes('aria-describedby')).toBeTruthy()
     expect(wrapper.text()).toContain('Invalid format.')
     expect(wrapper.find('[role="status"]').exists()).toBe(false)
     expect(wrapper.find('[role="alert"]').exists()).toBe(false)

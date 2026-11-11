@@ -1,20 +1,27 @@
-"""Activity and technical log tests."""
+"""Activity and logging tests."""
 
+import io
 import logging
-from datetime import timedelta
 
 import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
-from django.utils import timezone
-from django_db_logger.models import StatusLog
 
 from activity.logs import current_job_id, redact
 from activity.models import ActivityLog
-from activity.services import log_activity, purge_technical_logs
+from activity.services import log_activity
 from core.models import AppendOnlyError
 
 pytestmark = pytest.mark.django_db
+
+
+@pytest.fixture
+def console(monkeypatch: pytest.MonkeyPatch) -> io.StringIO:
+    """What the console handler of the settings writes."""
+    handler = next(h for h in logging.getLogger().handlers if h.get_name() == "console")
+    written = io.StringIO()
+    monkeypatch.setattr(handler, "stream", written)
+    return written
 
 
 def test_log_activity_records_user_object_and_detail() -> None:
@@ -59,27 +66,13 @@ def test_activity_log_is_append_only() -> None:
         ActivityLog.objects.all().delete()
 
 
-def test_purge_keeps_recent_and_deletes_old_logs() -> None:
-    old = StatusLog.objects.create(logger_name="x", msg="old")
-    StatusLog.objects.create(logger_name="x", msg="new")
-    StatusLog.objects.filter(pk=old.pk).update(create_datetime=timezone.now() - timedelta(days=31))
-    assert purge_technical_logs() == 1
-    assert list(StatusLog.objects.values_list("msg", flat=True)) == ["new"]
-
-
-def test_purge_never_touches_activity_log() -> None:
-    log_activity(None, "a")
-    purge_technical_logs(days=0)
-    assert ActivityLog.objects.count() == 1
-
-
-def test_db_handler_stores_job_id() -> None:
+def test_console_lines_carry_the_job_id(console: io.StringIO) -> None:
     token = current_job_id.set("42")
     try:
         logging.getLogger("tests.job").warning("hecho")
     finally:
         current_job_id.reset(token)
-    assert StatusLog.objects.get(logger_name="tests.job").msg == "[job 42] hecho"
+    assert "[job 42] tests.job: hecho" in console.getvalue()
 
 
 @pytest.mark.parametrize(
@@ -93,17 +86,12 @@ def test_db_handler_stores_job_id() -> None:
         "csrftoken=hunter2",
     ],
 )
-def test_sensitive_data_never_reaches_database_or_console(
-    message: str, caplog: pytest.LogCaptureFixture, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_sensitive_data_never_reaches_the_console(message: str, console: io.StringIO) -> None:
     logger = logging.getLogger("tests.secret")
     logger.error(message)
     logger.error("arg %s", message)
-    assert StatusLog.objects.count() == 2
-    for row in StatusLog.objects.all():
-        assert "hunter2" not in row.msg
-        assert "***" in row.msg
-    assert "hunter2" not in capsys.readouterr().err
+    assert "hunter2" not in console.getvalue()
+    assert console.getvalue().count("***") == 2
 
 
 def test_redact_nested_and_non_string_values() -> None:

@@ -15,7 +15,6 @@ describe('respuestas simuladas', () => {
     expect(started).toMatchObject({ id: 3, kind: 'import', params: { a: 1 }, status: 'pending' })
     expect(await api(`${base}3/`)).toMatchObject({ id: 3 })
     expect(await api(`${base}1/`)).toMatchObject({ id: 1, current: 'Daft Punk' })
-    expect(await api(`${base}3/lines/?after=0`)).toEqual([])
     expect(await api(`${base}3/stop/`, { method: 'POST' })).toMatchObject({ status: 'stopping' })
   })
 })

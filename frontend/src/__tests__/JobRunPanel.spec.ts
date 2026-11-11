@@ -11,7 +11,6 @@ import { render } from './helpers'
 import { sessionPinia } from './viewHelpers'
 
 type JobRun = components['schemas']['JobRun']
-type Line = components['schemas']['JobRunLine']
 
 const run = (fields: Partial<JobRun> = {}): JobRun => ({
   id: 5,
@@ -27,19 +26,11 @@ const run = (fields: Partial<JobRun> = {}): JobRun => ({
   summary: {},
   ...fields,
 })
-const line = (position: number, level: Line['level'] = 'info'): Line => ({
-  position,
-  level,
-  message: `line ${position}`,
-  created_at: '2026-01-01T10:00:00Z',
-})
-
 /**
  * Mocks the server side of a job: `states` are what the detail returns on each poll (the
- * last one repeats) and `batches` the lines per request. Records every `after`.
+ * last one repeats).
  */
-function serve(states: JobRun[], batches: Line[][] = []) {
-  const afters: string[] = []
+function serve(states: JobRun[]) {
   let detail = 0
   server.use(
     http.post('/api/v1/jobs/runs/', () =>
@@ -48,12 +39,8 @@ function serve(states: JobRun[], batches: Line[][] = []) {
     http.get('/api/v1/jobs/runs/5/', () =>
       HttpResponse.json(states[Math.min(detail++, states.length - 1)]),
     ),
-    http.get('/api/v1/jobs/runs/5/lines/', ({ request }) => {
-      afters.push(new URL(request.url).searchParams.get('after') as string)
-      return HttpResponse.json(batches.shift() ?? [])
-    }),
   )
-  return { afters, detailCalls: () => detail }
+  return { detailCalls: () => detail }
 }
 
 function mount(locale = 'en') {
@@ -91,7 +78,7 @@ describe('useJobRun y JobRunPanel', () => {
     await vi.waitFor(() => expect(wrapper.get('.job__status').text()).toContain('Running'))
     expect(wrapper.get('.job__status').text()).toContain('1 / 4')
     expect(wrapper.get('[role="progressbar"]').attributes('aria-valuenow')).toBe('25')
-    expect(wrapper.get('.job__current').text()).toBe('One More Time')
+    expect(wrapper.get('.job__current').text()).toBe('Now: One More Time')
   })
 
   it('starts without params', async () => {
@@ -120,17 +107,39 @@ describe('useJobRun y JobRunPanel', () => {
     expect(wrapper.find('[role="progressbar"]').exists()).toBe(false)
   })
 
-  it('asks only for the new lines on each poll', async () => {
-    const { afters } = serve([run()], [[line(1), line(2, 'warning')], [line(3, 'error')]])
+  it('lists what a finished job could not do, as the server words it', async () => {
+    const summary = {
+      downloaded: 1,
+      problems: [
+        { item: 'Around the World', reason: 'The connection failed.' },
+        { item: 'Da Funk', reason: 'No video matching this track was found.' },
+      ],
+      problems_omitted: 3,
+    }
+    serve([run({ status: 'succeeded', done: 4, current: '', summary })])
     const { wrapper, job } = mount()
     await job().start('download')
-    await vi.waitFor(() => expect(wrapper.findAll('.job__line')).toHaveLength(2))
-    await vi.advanceTimersByTimeAsync(POLL_MS)
-    await vi.waitFor(() => expect(wrapper.findAll('.job__line')).toHaveLength(3))
-    expect(afters.slice(0, 2)).toEqual(['0', '2'])
-    expect(wrapper.get('[role="log"]').attributes('aria-label')).toBe('Job log')
-    expect(wrapper.get('.job__line--warning').text()).toBe('line 2')
-    expect(wrapper.get('.job__line--error').text()).toBe('line 3')
+    await vi.waitFor(() => expect(wrapper.find('.job__problems').exists()).toBe(true))
+    expect(wrapper.get('.job__problems h3').text()).toBe('Could not be completed (5)')
+    const items = wrapper.findAll('.job__problems li').map((li) => li.text())
+    expect(items).toEqual([
+      'Around the World — The connection failed.',
+      'Da Funk — No video matching this track was found.',
+      '…and 3 more',
+    ])
+  })
+
+  it('shows why a job failed in words of the server, and no list without problems', async () => {
+    const summary = { error: 'The task could not finish. Try again later.' }
+    serve([run({ status: 'failed', summary })])
+    const { wrapper, job } = mount()
+    await job().start('download')
+    await vi.waitFor(() =>
+      expect(wrapper.get('[role="alert"]').text()).toBe(
+        'The task could not finish. Try again later.',
+      ),
+    )
+    expect(wrapper.find('.job__problems').exists()).toBe(false)
   })
 
   it('polling does not count as activity: it does not renew an idle session', async () => {
@@ -143,26 +152,21 @@ describe('useJobRun y JobRunPanel', () => {
         polls.push(request.headers.get('X-Background-Poll'))
         return HttpResponse.json(run())
       }),
-      http.get('/api/v1/jobs/runs/5/lines/', ({ request }) => {
-        polls.push(request.headers.get('X-Background-Poll'))
-        return HttpResponse.json([])
-      }),
     )
     const { job } = mount()
     await job().start('download')
-    await vi.waitFor(() => expect(polls).toHaveLength(2))
+    await vi.waitFor(() => expect(polls).toHaveLength(1))
     await vi.advanceTimersByTimeAsync(POLL_MS)
-    await vi.waitFor(() => expect(polls).toHaveLength(4))
+    await vi.waitFor(() => expect(polls).toHaveLength(2))
     expect(new Set(polls)).toEqual(new Set(['1']))
   })
 
-  it('stops polling once the job closes, after reading all its lines', async () => {
+  it('stops polling once the job closes', async () => {
     const closed = run({ status: 'succeeded', done: 4, current: '' })
-    const { afters, detailCalls } = serve([closed], [[line(1)], [line(2)]])
+    const { detailCalls } = serve([closed])
     const { wrapper, job } = mount()
     await job().start('download')
     await vi.waitFor(() => expect(wrapper.get('.job__status').text()).toContain('Finished'))
-    expect(afters).toEqual(['0', '1', '2'])
     expect(wrapper.find('button').exists()).toBe(false)
     expect(wrapper.find('.job__current').exists()).toBe(false)
     await vi.advanceTimersByTimeAsync(POLL_MS * 3)
@@ -225,11 +229,10 @@ describe('useJobRun y JobRunPanel', () => {
   })
 
   it('follows an existing run by id', async () => {
-    serve([run({ status: 'failed', total: 0 })], [[line(1)]])
+    serve([run({ status: 'failed', total: 0 })])
     const { wrapper, job } = mount()
     await job().follow(5)
-    await vi.waitFor(() => expect(wrapper.findAll('.job__line')).toHaveLength(1))
-    expect(wrapper.get('.job__status').text()).toBe('Failed')
+    await vi.waitFor(() => expect(wrapper.get('.job__status').text()).toBe('Failed'))
   })
 
   it('shows the error if the run does not exist', async () => {
@@ -245,16 +248,17 @@ describe('useJobRun y JobRunPanel', () => {
   it('following another run drops the in-flight poll of the previous one', async () => {
     let release!: () => void
     const gate = new Promise<void>((r) => (release = r))
-    serve([run()])
     server.use(
-      http.get('/api/v1/jobs/runs/5/lines/', async () => {
+      http.post('/api/v1/jobs/runs/', () =>
+        HttpResponse.json(run({ status: 'pending' }), { status: 201 }),
+      ),
+      http.get('/api/v1/jobs/runs/5/', async () => {
         await gate
-        return HttpResponse.json([line(1)])
+        return HttpResponse.json(run({ current: 'late answer' }))
       }),
       http.get('/api/v1/jobs/runs/6/', () =>
         HttpResponse.json(run({ id: 6, status: 'succeeded' })),
       ),
-      http.get('/api/v1/jobs/runs/6/lines/', () => HttpResponse.json([])),
     )
     const { job } = mount()
     await job().start('download')
@@ -262,7 +266,7 @@ describe('useJobRun y JobRunPanel', () => {
     release()
     await vi.waitFor(() => expect(job().run?.id).toBe(6))
     await flushPromises()
-    expect(job().lines).toEqual([])
+    expect(job().run?.id).toBe(6)
   })
 
   it('stops polling when the view unmounts', async () => {

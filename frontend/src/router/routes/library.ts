@@ -10,7 +10,7 @@ export default [
     path: '/library',
     name: 'library',
     component: LibraryView,
-    meta: { navLabel: 'library.nav', navGroup: 'main', navOrder: 20, navIcon: 'library' },
+    meta: { navLabel: 'library.nav', navGroup: 'main', navOrder: 20, navIcon: 'disc' },
     // Other views (the Log) link to an item with `?tab=…&id=…&panel=history`.
     beforeEnter: (to) => {
       const { tab, id, panel } = to.query
@@ -26,5 +26,10 @@ export default [
     path: '/library/:kind(artists|albums|tracks)/:id(\\d+)',
     name: 'library-item',
     component: LibraryItemView,
+  },
+  // Downloading used to have its own screen; old links land on the pending tracks.
+  {
+    path: '/download',
+    redirect: { name: 'library', query: { tab: 'tracks', downloaded: 'false' } },
   },
 ] satisfies RouteRecordRaw[]

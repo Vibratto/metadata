@@ -1,5 +1,6 @@
 """Artist import against an in-memory YouTube Music."""
 
+from collections.abc import Callable
 from typing import Any
 
 import pytest
@@ -12,9 +13,12 @@ from catalog.services.importing import Importer
 from integrations import ytmusic as ytm
 from integrations.ytmusic import YTMusicError
 from jobs import registry, runner
-from jobs.models import JobRun, JobRunLine
+from jobs.models import JobRun
 
 pytestmark = pytest.mark.django_db
+
+Noted = Callable[[JobRun], list[dict[str, str]]]
+NO_ANSWER = "YouTube Music did not answer as expected."
 
 MAIN, OTHER, GUEST, RELATED, SMALL = "UCmain", "UCother", "UCguest", "UCrelated", "UCsmall"
 MAIN_REF, GUEST_REF = ytm.ArtistRef("Main", MAIN), ytm.ArtistRef("Guest", GUEST)
@@ -106,10 +110,6 @@ def _import(run: JobRun, ytmusic: FakeYTMusic, ids: list[str]) -> Importer:
 
 def _track(video_id: str, album: str) -> Track:
     return Track.objects.get(recording__video_id=video_id, album__ytmusic_id=album)
-
-
-def _messages(run: JobRun) -> list[str]:
-    return list(run.lines.values_list("message", flat=True))
 
 
 def _snapshot() -> tuple[list[Any], ...]:
@@ -204,7 +204,6 @@ def test_repeated_position_moves_the_track_to_the_next_free_one(
     )
     _import(run, ytmusic, [MAIN])
     assert _track("vid-b", "second").track_number == 2
-    assert "Position 1 was taken, so “B” is now track 2." in _messages(run)
 
 
 def test_unplayable_tracks_are_kept_as_separate_recordings(
@@ -255,14 +254,13 @@ def test_related_artist_already_in_the_library_is_linked_not_fetched(
 
 
 def test_related_profile_that_cannot_be_fetched_is_kept_by_name(
-    run: JobRun, ytmusic: FakeYTMusic
+    run: JobRun, ytmusic: FakeYTMusic, noted_problems: Noted
 ) -> None:
     ytmusic.failing.add(RELATED)
     importer = _import(run, ytmusic, [MAIN])
     assert Artist.objects.get(ytmusic_id=RELATED).image_url == ""
     assert importer.counts["failed_artists"] == 0
-    warning = run.lines.get(level=JobRunLine.Level.WARNING)
-    assert warning.message == "Artist “Related” left incomplete: profile failed: no data"
+    assert noted_problems(run) == [{"item": "Related", "reason": NO_ANSWER}]
 
 
 def test_blocked_related_artist_is_not_saved(run: JobRun, ytmusic: FakeYTMusic) -> None:
@@ -271,14 +269,13 @@ def test_blocked_related_artist_is_not_saved(run: JobRun, ytmusic: FakeYTMusic) 
     assert not Artist.objects.filter(ytmusic_id=RELATED).exists()
 
 
-def test_progress_and_log_lines(run: JobRun, ytmusic: FakeYTMusic) -> None:
+def test_progress_counts_the_albums(
+    run: JobRun, ytmusic: FakeYTMusic, noted_problems: Noted
+) -> None:
     _import(run, ytmusic, [MAIN])
     run.refresh_from_db()
     assert (run.done, run.total) == (2, 2)
-    messages = _messages(run)
-    assert messages[0] == "Artist “Main”."
-    assert "Album “First”: 2 tracks." in messages
-    assert "Track 1 is the same recording as on “First”." in messages
+    assert noted_problems(run) == []
 
 
 def test_second_import_changes_nothing(run: JobRun, ytmusic: FakeYTMusic) -> None:
@@ -379,12 +376,13 @@ def test_title_guest_reuses_artist_with_same_name(run: JobRun, ytmusic: FakeYTMu
     assert _track("vid-one", "first").artists.filter(pk=existing.pk).exists()
 
 
-def test_failing_artist_does_not_stop_the_others(run: JobRun, ytmusic: FakeYTMusic) -> None:
+def test_failing_artist_does_not_stop_the_others(
+    run: JobRun, ytmusic: FakeYTMusic, noted_problems: Noted
+) -> None:
     importer = _import(run, ytmusic, ["UCmissing", MAIN])
     assert importer.counts["failed_artists"] == 1
     assert Album.objects.count() == 2
-    error = run.lines.get(level=JobRunLine.Level.ERROR)
-    assert error.message == "Artist UCmissing: artist failed: no data"
+    assert noted_problems(run) == [{"item": "Artist UCmissing", "reason": NO_ANSWER}]
 
 
 def test_network_failure_counts_as_a_failed_artist(
@@ -398,14 +396,13 @@ def test_network_failure_counts_as_a_failed_artist(
 
 
 def test_failing_album_saves_nothing_of_it_and_does_not_stop_the_rest(
-    run: JobRun, ytmusic: FakeYTMusic
+    run: JobRun, ytmusic: FakeYTMusic, noted_problems: Noted
 ) -> None:
     ytmusic.failing.add("first")
     importer = _import(run, ytmusic, [MAIN])
     assert list(Album.objects.values_list("ytmusic_id", flat=True)) == ["second"]
     assert (importer.counts["failed_albums"], importer.counts["failed_artists"]) == (1, 0)
-    error = run.lines.get(level=JobRunLine.Level.ERROR)
-    assert error.message == "Album “First”: album failed: no data"
+    assert noted_problems(run) == [{"item": "First", "reason": NO_ANSWER}]
 
 
 def test_stop_between_releases(

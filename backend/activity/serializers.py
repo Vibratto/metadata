@@ -1,6 +1,5 @@
-"""Activity and technical log serializers."""
+"""Activity serializers."""
 
-from django_db_logger.models import StatusLog
 from rest_framework import serializers
 
 from activity.models import ActivityLog
@@ -31,16 +30,3 @@ class ActivityLogSerializer(serializers.ModelSerializer[ActivityLog]):
         """Returns ``app.model`` of the target."""
         content_type = obj.content_type
         return f"{content_type.app_label}.{content_type.model}" if content_type else ""
-
-
-class TechnicalLogSerializer(serializers.ModelSerializer[StatusLog]):
-    """One technical log line in the database."""
-
-    created_at = serializers.DateTimeField(source="create_datetime", read_only=True)
-
-    class Meta:
-        """Everything is read only."""
-
-        model = StatusLog
-        fields = ["id", "created_at", "level", "logger_name", "msg", "trace"]
-        read_only_fields = fields

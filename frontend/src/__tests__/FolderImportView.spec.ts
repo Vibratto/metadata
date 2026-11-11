@@ -33,7 +33,6 @@ describe('FolderImportView', () => {
     expect(wrapper.text()).toContain('2 linked, 0 were already linked and 2 not linked.')
     expect(wrapper.get('tbody tr').text()).toContain('Daft Punk/demo.mp3')
     expect(wrapper.get('tbody tr').text()).toContain('No tags or no title')
-    expect(wrapper.text()).toContain('Daft Punk/one.mp3 → “One More Time”')
   })
 
   it('shows the reason code when it has no translation', async () => {

@@ -188,7 +188,6 @@ def test_restore_into_an_empty_library_brings_everything_back(
     run = JobRun.objects.get(kind="library_restore")
     assert (run.status, run.user) == (JobRun.Status.SUCCEEDED, owner)
     assert run.summary == {"created": len(entries), "skipped": 0}
-    assert run.lines.get().message == f"{len(entries)} items added, 0 already existed."
     assert _instants(_export(api)) == _instants(entries)
     # The uploaded copy is deleted once the job is done.
     assert list(upload_dir.iterdir()) == []

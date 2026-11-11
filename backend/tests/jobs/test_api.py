@@ -9,8 +9,8 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from activity.models import ActivityLog
-from jobs import registry, runner
-from jobs.models import JobRun, JobRunLine
+from jobs import registry
+from jobs.models import JobRun
 
 pytestmark = pytest.mark.django_db
 BASE = "/api/v1/jobs/runs/"
@@ -23,8 +23,6 @@ def demo_task(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
 
     @registry.register("demo")
     def task(run: JobRun, params: dict[str, Any]) -> dict[str, Any]:
-        runner.line(run, JobRunLine.Level.INFO, "uno")
-        runner.line(run, JobRunLine.Level.WARNING, "dos")
         return {"echo": params}
 
     yield
@@ -35,13 +33,13 @@ def test_anonymous_is_rejected() -> None:
     assert APIClient().post(BASE, {"kind": "demo"}, format="json").status_code == 403
 
 
-def test_start_runs_task_and_logs_activity(api: APIClient) -> None:
+def test_start_runs_the_task_without_filling_the_activity_history(api: APIClient) -> None:
     response = api.post(BASE, {"kind": "demo", "params": {"a": 1}}, format="json")
     assert response.status_code == 201
     assert response.data["status"] == "succeeded"
     assert response.data["user"] == "owner"
     assert response.data["summary"] == {"echo": {"a": 1}}
-    assert ActivityLog.objects.filter(action="jobs.run.started", username="owner").count() == 1
+    assert not ActivityLog.objects.exists()
 
 
 @pytest.mark.parametrize("body", [{"kind": "nope"}, {}, {"kind": "demo", "params": [1]}])
@@ -75,27 +73,17 @@ def test_detail_shows_progress(api: APIClient) -> None:
     assert api.get(f"{BASE}999/").status_code == 404
 
 
-def test_lines_are_returned_after_a_position(api: APIClient) -> None:
-    run = JobRun.objects.get(pk=api.post(BASE, {"kind": "demo"}, format="json").data["id"])
-    assert [line["message"] for line in api.get(f"{BASE}{run.pk}/lines/").data] == ["uno", "dos"]
-    after = api.get(f"{BASE}{run.pk}/lines/", {"after": 1}).data
-    assert [(line["position"], line["level"]) for line in after] == [(2, "warning")]
-    assert api.get(f"{BASE}{run.pk}/lines/", {"after": "x"}).status_code == 400
-
-
-def test_stop_requests_stop_and_logs_activity(api: APIClient) -> None:
+def test_stop_requests_stop(api: APIClient) -> None:
     run = JobRun.objects.create(kind="demo", status=JobRun.Status.RUNNING)
     response = api.post(f"{BASE}{run.pk}/stop/")
     assert response.status_code == 200
     assert response.data["status"] == "stopping"
-    assert ActivityLog.objects.filter(action="jobs.run.stop_requested").count() == 1
 
 
 def test_stop_of_closed_run_conflicts(api: APIClient) -> None:
     run = JobRun.objects.create(kind="demo", status=JobRun.Status.SUCCEEDED)
     JobRun.objects.filter(pk=run.pk).update(finished_at=timezone.now())
     assert api.post(f"{BASE}{run.pk}/stop/").status_code == 409
-    assert not ActivityLog.objects.filter(action="jobs.run.stop_requested").exists()
 
 
 def test_runs_cannot_be_edited_or_deleted(api: APIClient) -> None:

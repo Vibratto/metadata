@@ -14,7 +14,7 @@ ordenado, listo para un reproductor como Navidrome o Jellyfin.
   canciones, créditos, imagen del artista y portadas.
 - **Los artistas relacionados** se guardan como perfiles en su propia pestaña. A los grandes
   (por oyentes mensuales; el umbral es un ajuste) se les sugiere importar la discografía.
-- **Descarga** el audio en mp3, m4a, opus o flac, etiquetado, con ReplayGain y con la
+- **Descarga** el audio en opus (por defecto), mp3, m4a o flac, etiquetado, con ReplayGain y con la
   plantilla de nombres que elijas.
 - **Letras**, sincronizadas cuando las hay, de LRCLIB y YouTube Music.
 - **Novedades**: vigila artistas y trae lo que publiquen, con descarga automática opcional.

@@ -32,8 +32,7 @@
       "up": "Subir {name}",
       "down": "Bajar {name}",
       "remove": "Quitar {name}",
-      "save": "Guardar",
-      "cancel": "Cancelar"
+      "save": "Guardar"
     },
     "detail": {
       "edit": "Editar",

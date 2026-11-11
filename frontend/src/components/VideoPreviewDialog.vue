@@ -26,11 +26,11 @@ const open = computed({
   <BaseDialog
     v-model="open"
     size="wide"
-    :title="t('download.previewOf', { title: preview?.title ?? '' })"
+    :title="t('library.preview.of', { title: preview?.title ?? '' })"
   >
     <template v-if="preview">
       <BaseAlert v-if="preview.error" variant="error">{{ preview.error }}</BaseAlert>
-      <p v-else-if="!preview.video">{{ t('download.searching') }}</p>
+      <p v-else-if="!preview.video">{{ t('library.preview.searching') }}</p>
       <template v-else>
         <iframe
           class="video-preview"

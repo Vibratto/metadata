@@ -32,8 +32,7 @@
       "up": "Move {name} up",
       "down": "Move {name} down",
       "remove": "Remove {name}",
-      "save": "Save",
-      "cancel": "Cancel"
+      "save": "Save"
     },
     "detail": {
       "edit": "Edit",

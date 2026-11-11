@@ -114,6 +114,7 @@ async function confirm(): Promise<void> {
   flex-direction: column;
   gap: var(--space-3);
   max-width: 40rem;
+  margin-inline: auto;
 }
 h1,
 h2,

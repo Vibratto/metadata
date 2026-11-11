@@ -73,7 +73,11 @@ async function unblock(): Promise<void> {
       </template>
     </ResponsiveList>
 
-    <nav class="blocked__pager" :aria-label="t('blocked.pager.label')">
+    <nav
+      v-if="list.hasPrevious || list.hasNext"
+      class="blocked__pager"
+      :aria-label="t('blocked.pager.label')"
+    >
       <BaseButton
         variant="secondary"
         :disabled="!list.hasPrevious"

@@ -1,80 +1,48 @@
 {
   "log": {
-    "nav": "Log",
-    "title": "Log",
-    "tabs": {
-      "label": "Log sections",
-      "activity": "Activity",
-      "jobs": "Jobs",
-      "technical": "Technical logs"
-    },
+    "nav": "Activity",
+    "title": "Activity",
     "filters": {
       "dateFrom": "From",
-      "dateTo": "To",
-      "username": "User",
-      "action": "Action",
-      "objectType": "Object type",
-      "kind": "Job type",
-      "status": "Status",
-      "level": "Minimum level",
-      "module": "Module",
-      "task": "Job number",
-      "search": "Search the message",
-      "any": "All"
+      "dateTo": "To"
     },
     "columns": {
       "date": "Date",
-      "user": "User",
-      "action": "Action",
-      "object": "Object",
-      "id": "No.",
-      "kind": "Type",
-      "status": "Status",
-      "started": "Started",
-      "progress": "Progress",
-      "level": "Level",
-      "module": "Module",
-      "message": "Message"
+      "action": "What happened",
+      "object": "Item"
     },
-    "objectType": {
-      "catalog": {
-        "artist": "Artist",
-        "album": "Album",
-        "track": "Track"
-      },
-      "jobs": {
-        "jobrun": "Job"
-      },
-      "watches": {
-        "watch": "Release watch"
-      },
-      "proxies": {
-        "proxy": "Proxy"
-      },
-      "auth": {
-        "user": "User"
-      }
+    "actions": {
+      "auth_login": "Signed in",
+      "auth_login_failed": "Failed sign-in attempt",
+      "auth_logout": "Signed out",
+      "catalog_album_edited": "Edited an album",
+      "catalog_artist_blocked": "Blocked an artist",
+      "catalog_blocked_added": "Added something to the block list",
+      "catalog_blocked_removed": "Removed something from the block list",
+      "catalog_download_finished": "Download finished. Tracks downloaded: {downloaded}",
+      "catalog_download_relocated": "Files moved to their place: {count}",
+      "catalog_download_retagged": "Files with their tags rewritten: {count}",
+      "catalog_folder_import": "Imported a folder. Files linked: {linked}",
+      "catalog_import": "Imported artists",
+      "catalog_library_restore_started": "Restored a backup of the library",
+      "catalog_recording_merged": "Merged two recordings",
+      "catalog_track_split": "Split a track from its recording",
+      "catalog_track_uploaded": "Uploaded the audio of a track",
+      "preferences_updated": "Changed a setting",
+      "proxies_bulk_created": "Proxies added: {created}",
+      "proxies_checked": "Checked a proxy",
+      "proxies_created": "Added a proxy",
+      "proxies_deleted": "Deleted a proxy",
+      "proxies_updated": "Changed a proxy",
+      "watches_created": "Created a release watch",
+      "watches_deleted": "Deleted a release watch",
+      "watches_updated": "Changed a release watch",
+      "watches_watch_checked": "Looked for new releases. Albums found: {albums}",
+      "other": "Change in the library"
     },
-    "kind": {
-      "import": "Import",
-      "download": "Download",
-      "maintenance": "Maintenance",
-      "watch_check": "New releases"
-    },
-    "level": {
-      "10": "Debug",
-      "20": "Info",
-      "30": "Warning",
-      "40": "Error",
-      "50": "Critical"
-    },
-    "system": "System",
     "history": "View history",
-    "trace": "Trace",
-    "detailTitle": "Job no. {id}",
     "page": "Page {page} · {count} in total",
     "previous": "Previous",
-    "next": "Next",
-    "object": "{type} no. {id}"
+    "next": "Next"
   }
 }

@@ -39,7 +39,7 @@ function capture(method: string, path: string): Promise<unknown> {
   })
 }
 
-// Other areas (Download) also mock the library lists: here the Library ones win.
+// Other areas also mock the library lists: here the Library ones win.
 let settle: () => Promise<void>
 beforeEach(() => {
   server.use(...libraryHandlers)

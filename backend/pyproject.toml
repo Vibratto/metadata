@@ -24,7 +24,7 @@ django_settings_module = "config.settings.test"
 
 [[tool.mypy.overrides]]
 # These packages ship neither stubs nor py.typed.
-module = ["django_db_logger.*", "simple_history.*", "axes.*", "ytmusicapi.*"]
+module = ["simple_history.*", "axes.*", "ytmusicapi.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

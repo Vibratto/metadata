@@ -85,6 +85,7 @@ form {
 }
 .folder-import {
   max-width: 48rem;
+  margin-inline: auto;
 }
 .folder-import__hint {
   margin: 0;

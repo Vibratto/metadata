@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { server } from '../mocks/server'
 import { useSessionStore } from '../stores/session'
 import AccountView from '../views/AccountView.vue'
-import { fill, mountView } from './viewHelpers'
+import { choose, fill, mountView } from './viewHelpers'
 
 afterEach(() => localStorage.clear())
 
@@ -32,7 +32,7 @@ describe('AccountView', () => {
       }),
     )
     const { wrapper } = await mountSignedIn()
-    await wrapper.get('select').setValue('es')
+    await choose(wrapper, 'Language', 'Español')
     await flushPromises()
     expect(wrapper.get('h1').text()).toBe('Mi cuenta')
     expect(localStorage.getItem('locale')).toBe('es')

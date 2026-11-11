@@ -51,7 +51,8 @@ def _run() -> JobRun:
 
 
 def _lines(run: JobRun) -> list[str]:
-    return list(run.lines.values_list("message", flat=True))
+    """What the run could not do, as “item: reason”."""
+    return [f"{p['item']}: {p['reason']}" for p in runner._problems.get(run.pk, [])]
 
 
 def _download(library: Path, name: str = "a.mp3", track: Track | None = None) -> Download:
@@ -136,8 +137,8 @@ def test_retag_reports_missing_and_failing_files_and_goes_on(
     assert service.retag_downloads(run, fetch_cover=_no_fetch) == {"retagged": 1, "failed": 2}
     assert done == ["fine.mp3"]
     assert _lines(run) == [
-        f"Missing file: {library / 'gone.mp3'}",
-        f"Could not tag {library / 'broken.mp3'}: cannot tag",
+        "gone.mp3: The file is missing.",
+        "broken.mp3: The audio file could not be processed.",
     ]
 
 
@@ -213,7 +214,7 @@ def test_replaygain_failure_of_one_album_does_not_stop_the_rest(
     DownloadFactory(track=TrackFactory(album=AlbumFactory(title="Fine")))
     run = _run()
     assert service.replaygain_albums(run) == {"albums": 1, "files": 2, "failed": 1}
-    assert _lines(run) == ["ReplayGain of “Broken”: ffmpeg failed"]
+    assert _lines(run) == ["Broken: The audio file could not be processed."]
 
 
 def test_replaygain_does_nothing_when_turned_off(measured: list[tuple[int, bool]]) -> None:
@@ -222,7 +223,7 @@ def test_replaygain_does_nothing_when_turned_off(measured: list[tuple[int, bool]
     run = _run()
     assert service.replaygain_albums(run) == {"albums": 0, "files": 0, "failed": 0}
     assert measured == []
-    assert _lines(run) == ["ReplayGain is turned off in the settings."]
+    assert _lines(run) == ["ReplayGain: It is turned off in the settings."]
 
 
 # --- Relocate ---
@@ -302,8 +303,10 @@ def test_relocate_never_overwrites_and_reports_missing_files(library: Path) -> N
     assert summary == {"moved": 0, "unchanged": 0, "failed": 2}
     assert occupied.read_bytes() == b"someone else's"
     assert (library / "old" / "a.mp3").exists()
-    assert any(line.startswith("Destination already exists:") for line in _lines(run))
-    assert any(line.startswith("Missing file:") for line in _lines(run))
+    assert sorted(_lines(run)) == [
+        "a.mp3: Another file already has the name it should take.",
+        "gone.mp3: The file is missing.",
+    ]
 
 
 @pytest.mark.usefixtures("template")
@@ -322,7 +325,7 @@ def test_check_files_lists_the_downloads_whose_file_is_missing(library: Path) ->
     run = _run()
 
     assert service.check_download_files(run) == {"checked": 2, "missing": [missing.pk]}
-    assert _lines(run) == [f"The file of download #{missing.pk} is missing: gone.mp3"]
+    assert _lines(run) == ["gone.mp3: The file is missing."]
     assert Download.objects.count() == 2
 
 
@@ -355,7 +358,7 @@ def test_complete_albums_reports_an_album_that_fails_and_goes_on(ytmusic: FakeYT
     run = _run()
     summary = service.complete_albums(run, ytmusic)
     assert (summary["albums"], summary["tracks"], summary["errors"]) == (2, 1, 1)
-    assert "Could not complete “Lost”: album failed: no data" in _lines(run)
+    assert _lines(run) == ["Lost: YouTube Music did not answer as expected."]
 
 
 # --- Complete artists ---
@@ -389,7 +392,7 @@ def test_complete_artists_counts_unchanged_and_failed(ytmusic: FakeYTMusic) -> N
     run = _run()
     summary = service.complete_artists(run, ytmusic)
     assert summary == {"reviewed": 2, "completed": 0, "unchanged": 1, "errors": 1}
-    assert _lines(run) == ["Could not complete “Gone”: profile failed: no data"]
+    assert _lines(run) == ["Gone: YouTube Music did not answer as expected."]
 
 
 # --- Lyrics ---
@@ -417,7 +420,7 @@ def test_lyrics_not_found_and_failed_are_counted_apart(library: Path, lrclib: Fa
     lrclib.answer = requests.ConnectionError("LRCLIB is down")
     run = _run()
     assert service.fetch_missing_lyrics(run) == {"found": 0, "not_found": 0, "failed": 1}
-    assert _lines(run) == ["Lyrics of “Quiet”: LRCLIB is down"]
+    assert _lines(run) == ["Quiet: The connection failed."]
 
 
 # --- Job ---

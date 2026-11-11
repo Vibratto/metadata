@@ -12,7 +12,7 @@ defineProps<{ withLabel?: boolean }>()
 const { t } = useI18n()
 const { theme, set } = useTheme()
 
-const ICON = { auto: 'contrast', light: 'sun', dark: 'moon' } as const
+const ICON = { auto: 'themeAuto', light: 'sun', dark: 'moon' } as const
 const label = computed(() => t('theme.label', { theme: t(`theme.${theme.value}`) }))
 
 function next(): void {

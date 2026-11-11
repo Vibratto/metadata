@@ -3,8 +3,7 @@
 from django.utils import timezone
 
 from jobs import scheduler
-from jobs.models import JobRun, JobRunLine
-from jobs.runner import line
+from jobs.models import JobRun
 
 
 def mark_interrupted() -> int:
@@ -19,7 +18,6 @@ def mark_interrupted() -> int:
     for run in leftovers:
         run.status, run.finished_at = JobRun.Status.INTERRUPTED, timezone.now()
         run.save(update_fields=["status", "finished_at"])
-        line(run, JobRunLine.Level.WARNING, "Interrupted by a server restart.")
         count += 1
     return count
 

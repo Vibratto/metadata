@@ -24,7 +24,6 @@ INSTALLED_APPS = [
     "drf_spectacular_sidecar",
     "django_filters",
     "simple_history",
-    "django_db_logger",
     "axes",
     "core",
     "accounts",
@@ -222,9 +221,6 @@ SECURE_CSP = {
 
 # --- Logging ---
 
-# With the formatter on, the message stored in the database includes the job id.
-DJANGO_DB_LOGGER_ENABLE_FORMATTER = True
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -236,7 +232,6 @@ LOGGING = {
     },
     "formatters": {
         "plain": {"format": "%(asctime)s %(levelname)s [job %(job_id)s] %(name)s: %(message)s"},
-        "db": {"format": "[job %(job_id)s] %(message)s"},
     },
     "handlers": {
         "console": {
@@ -244,17 +239,8 @@ LOGGING = {
             "formatter": "plain",
             "filters": ["job_id", "sensitive"],
         },
-        "db": {
-            "class": "django_db_logger.db_log_handler.DatabaseLogHandler",
-            "level": "INFO",
-            "formatter": "db",
-            "filters": ["job_id", "sensitive"],
-        },
     },
-    "root": {"handlers": ["console", "db"], "level": "INFO"},
-    # axes logs an INFO line while starting, before the log table exists on a fresh
-    # database. Lockouts and failed sign-ins are WARNING and are still stored.
-    "loggers": {"axes": {"level": "WARNING"}},
+    "root": {"handlers": ["console"], "level": "INFO"},
 }
 
 # --- Background jobs ---

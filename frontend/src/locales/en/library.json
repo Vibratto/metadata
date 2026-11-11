@@ -78,7 +78,9 @@
       "find": "Search",
       "add": "Add",
       "save": "Save artists",
-      "done": "Artists updated."
+      "done": "Artists updated.",
+      "update": "Update discography",
+      "confirm": "Look for new releases of {name} and add them to the library?"
     },
     "history": {
       "title": "History",
@@ -156,7 +158,24 @@
     "also_on": "On another album | On {n} other albums",
     "related": {
       "intro": "Artists related to the ones you imported. Only their profile is saved; import the discography of the ones you want.",
-      "import": "Import discography"
+      "import": "Import discography",
+      "confirm": "Import every album, single and track of {name}? This can take a few minutes.",
+      "suggested": "Suggested"
+    },
+    "downloads": {
+      "all": "Download all pending",
+      "chosen": "Download selected",
+      "selected": "{count} track selected | {count} tracks selected",
+      "clear": "Clear",
+      "running": "A download is running; you can follow it here.",
+      "pendingOnly": "Pending only",
+      "select": "Select {title} to download",
+      "copy": "Copied from another album"
+    },
+    "preview": {
+      "open": "Preview",
+      "of": "Preview of {title}",
+      "searching": "Looking for the video…"
     }
   }
 }

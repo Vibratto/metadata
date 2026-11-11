@@ -8,6 +8,7 @@ import { errorText } from '../api/errors'
 import BaseAlert from '../components/BaseAlert.vue'
 import BaseButton from '../components/BaseButton.vue'
 import BaseField from '../components/BaseField.vue'
+import BaseSelect from '../components/BaseSelect.vue'
 import { rememberLocale } from '../i18n'
 import { type User, useSessionStore } from '../stores/session'
 
@@ -27,8 +28,8 @@ const message = ref('')
 const error = ref('')
 
 /** Switches the language at once and saves it to the account for other devices. */
-async function setLocale(event: Event): Promise<void> {
-  locale.value = (event.target as HTMLSelectElement).value
+async function setLocale(language: string): Promise<void> {
+  locale.value = language
   rememberLocale(locale.value)
   await run(async () => {
     await api('/api/v1/accounts/language/', { method: 'PUT', body: { language: locale.value } })
@@ -84,13 +85,16 @@ const logout = () =>
     <BaseAlert v-if="message" variant="success">{{ message }}</BaseAlert>
     <BaseAlert v-if="error" variant="error">{{ error }}</BaseAlert>
 
-    <div class="language">
-      <label for="account-language">{{ t('account.language.label') }}</label>
-      <select id="account-language" :value="locale" @change="setLocale">
-        <option value="es">{{ t('account.language.es') }}</option>
-        <option value="en">{{ t('account.language.en') }}</option>
-      </select>
-    </div>
+    <BaseSelect
+      class="language"
+      :model-value="locale"
+      :label="t('account.language.label')"
+      :options="[
+        { value: 'en', label: t('account.language.en') },
+        { value: 'es', label: t('account.language.es') },
+      ]"
+      @update:model-value="setLocale"
+    />
 
     <form name="username" @submit.prevent="changeUsername">
       <h2>{{ t('account.username.title') }}</h2>
@@ -120,14 +124,11 @@ const logout = () =>
   flex-direction: column;
   gap: var(--space-3);
   max-width: 32rem;
+  margin-inline: auto;
 }
 form {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-}
-.language select {
-  display: block;
-  margin-top: var(--space-1);
 }
 </style>

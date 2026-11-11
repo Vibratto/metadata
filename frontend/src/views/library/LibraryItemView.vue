@@ -230,10 +230,10 @@ void load()
             <BaseButton
               v-if="kind === 'tracks'"
               variant="secondary"
-              :aria-label="`${t('download.preview')}: ${label(item)}`"
+              :aria-label="`${t('library.preview.open')}: ${label(item)}`"
               @click="showPreview({ id: item.id, title: label(item) })"
             >
-              <AppIcon name="play" />{{ t('download.preview') }}
+              <AppIcon name="play" />{{ t('library.preview.open') }}
             </BaseButton>
             <RouterLink
               v-if="kind === 'tracks'"

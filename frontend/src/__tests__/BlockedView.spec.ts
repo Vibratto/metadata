@@ -42,6 +42,11 @@ describe('BlockedView', () => {
     expect(rows(wrapper)[1]!.text()).toContain('Track')
   })
 
+  it('shows no pager when everything fits on one page', async () => {
+    const { wrapper } = await mount()
+    expect(wrapper.find('.blocked__pager').exists()).toBe(false)
+  })
+
   it('says nothing is blocked', async () => {
     server.use(http.get(BLOCKED, () => HttpResponse.json({ count: 0, results: [] })))
     const { wrapper } = await mount()
