@@ -7,7 +7,7 @@ RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 
-FROM python:3.13-slim
+FROM python:3.15-slim
 # ffmpeg converts the downloaded audio; gettext compiles the translations.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ffmpeg gettext \
