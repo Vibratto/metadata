@@ -10,4 +10,4 @@ yt-dlp>=2026.10
 ytmusicapi>=1.12.3
 mutagen>=1.48.1
 drf-spectacular-sidecar>=2026.10.1
-gunicorn>=26.2.0
+gunicorn>=27.0.1
